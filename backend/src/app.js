@@ -9,7 +9,6 @@ app.use(cors());
 app.use(express.json());
 app.use('/api/v1', routes);
 app.use("/api/v1/local", express.static(path.join(__dirname, "app/local")));
-console.log(path.join(__dirname, "app/local"));
 
 app.get('/', (req, res) => {
     res.json({

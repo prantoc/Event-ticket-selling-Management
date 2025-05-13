@@ -1,182 +1,186 @@
-const mongoose = require('mongoose');
-// const eventSchema = new mongoose.Schema({
-//   title: { type: String, required: true },
-//   description: { type: String },
-//   category: { type: String, enum: ['music', 'comedy', 'workshop', 'other'], required: true },
-//   dateTime: { type: Date, required: true },
-//   location: {
-//     address: String,
-//     lat: Number,
-//     lng: Number
-//   },
-//   media: [String],
-//   organizerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-//   ticketTiers: [{
-//     tierName: { type: String, required: true },
-//     price: { type: Number, required: true },
-//     quantity: { type: Number, required: true }
-//   }],
-//   refundPolicy: {
-//     daysBefore: { type: Number, default: 7 },
-//     refundPercent: { type: Number, default: 50 }
-//   },
-//   status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' }
-// }, { timestamps: true });
+const mongoose = require("mongoose");
+const slugify = require("../../utils/slugify");
 
-const eventSchema = new mongoose.Schema({
-  organizerId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
-  title: {
-    type: String,
-    required: true,
-    maxlength: 200
-  },
-  slug: {
-    type: String,
-    unique: true,
-    lowercase: true
-  },
-  description: {
-    type: String,
-    required: true,
-    maxlength: 5000
-  },
-  category: {
-    type: String,
-    enum: ['music', 'comedy', 'workshops', 'sports', 'arts', 'education', 'business', 'technology', 'food', 'other'],
-    required: true
-  },
-  images: [{
-    url: String,
-    isPrimary: Boolean,
-    caption: String
-  }],
-  startDateTime: {
-    type: Date,
-    required: true
-  },
-  endDateTime: {
-    type: Date,
-    required: true
-  },
-  venue: {
-    name: {
+const eventSchema = new mongoose.Schema(
+  {
+    organizerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    eventName: {
       type: String,
-      required: true
+      required: true,
+      maxlength: 200,
     },
-    address: {
-      street: String,
-      city: String,
-      state: String,
-      country: String,
-      zipCode: String
-    },
-    coordinates: {
-      latitude: Number,
-      longitude: Number
-    },
-    mapUrl: String
-  },
-  ticketTiers: [{
-    name: {
+    slug: {
       type: String,
-      required: true
+      unique: true,
+      lowercase: true,
     },
-    description: String,
-    price: {
+    description: {
+      type: String,
+      required: true,
+      maxlength: 5000,
+    },
+    eventCategory: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
+      required: true,
+    },
+    eventImages: [String],
+    eventDate: {
+      type: Date,
+      required: true,
+    },
+    startTime: {
+      type: String,
+      required: true,
+    },
+    endTime: {
+      type: String,
+      required: true,
+    },
+    venue: {
+      name: {
+        type: String,
+        required: true,
+      },
+      address: {
+        street: String,
+        city: String,
+        state: String,
+        country: String,
+        zipCode: String,
+      },
+      coordinates: {
+        latitude: Number,
+        longitude: Number,
+      },
+      mapUrl: String,
+    },
+    totalCapacity: {
       type: Number,
       required: true,
-      min: 0
     },
-    currency: {
+    ticketTiers: [
+      {
+        name: {
+          type: String,
+          required: true,
+        },
+
+        price: {
+          type: Number,
+          required: true,
+          min: 0,
+        },
+
+        availableQuantity: {
+          type: Number,
+          required: true,
+        },
+        sold: {
+          type: Number,
+          default: 0,
+        },
+        maxPerOrder: {
+          type: Number,
+          default: 10,
+        },
+        salesStartDate: Date,
+        salesEndDate: Date,
+      },
+    ],
+    refundPolicy: {
+      type: {
+        type: String,
+        enum: ["no-refunds", "time-based", "custom"],
+        default: "time-based",
+      },
+      rules: [
+        {
+          daysBeforeEvent: Number,
+          refundPercentage: Number,
+          description: String,
+        },
+      ],
+      customPolicy: String,
+    },
+    status: {
       type: String,
-      default: 'USD'
+      enum: [
+        "draft",
+        "pending-approval",
+        "approved",
+        "published",
+        "cancelled",
+        "completed",
+      ],
+      default: "draft",
     },
-    totalQuantity: {
-      type: Number,
-      required: true
+    approvalStatus: {
+      approved: {
+        type: Boolean,
+        default: false,
+      },
+      approvedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+      approvedAt: Date,
+      rejectionReason: String,
     },
-    availableQuantity: {
-      type: Number,
-      required: true
-    },
-    maxPerOrder: {
-      type: Number,
-      default: 10
-    },
-    salesStartDate: Date,
-    salesEndDate: Date,
-    position: Number // For ordering (e.g., front-row, general)
-  }],
-  refundPolicy: {
-    type: {
-      type: String,
-      enum: ['no-refunds', 'time-based', 'custom'],
-      default: 'time-based'
-    },
-    rules: [{
-      daysBeforeEvent: Number,
-      refundPercentage: Number,
-      description: String
-    }],
-    customPolicy: String
-  },
-  status: {
-    type: String,
-    enum: ['draft', 'pending-approval', 'approved', 'published', 'cancelled', 'completed'],
-    default: 'draft'
-  },
-  approvalStatus: {
-    approved: {
+    publishedAt: Date,
+    tags: [String],
+    isFeature: {
       type: Boolean,
-      default: false
+      default: false,
     },
-    approvedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User'
+    analytics: {
+      views: {
+        type: Number,
+        default: 0,
+      },
+      uniqueVisitors: {
+        type: Number,
+        default: 0,
+      },
     },
-    approvedAt: Date,
-    rejectionReason: String
+    revenue: {
+      gross: {
+        type: Number,
+        default: 0,
+      },
+      platformCommission: {
+        type: Number,
+        default: 0,
+      },
+      net: {
+        type: Number,
+        default: 0,
+      },
+      refunded: {
+        type: Number,
+        default: 0,
+      },
+    },
   },
-  publishedAt: Date,
-  tags: [String],
-  isFeature: {
-    type: Boolean,
-    default: false
-  },
-  analytics: {
-    views: {
-      type: Number,
-      default: 0
-    },
-    uniqueVisitors: {
-      type: Number,
-      default: 0
-    }
-  },
-  revenue: {
-    gross: {
-      type: Number,
-      default: 0
-    },
-    platformCommission: {
-      type: Number,
-      default: 0
-    },
-    net: {
-      type: Number,
-      default: 0
-    },
-    refunded: {
-      type: Number,
-      default: 0
-    }
+  {
+    timestamps: true,
   }
-}, {
-  timestamps: true
+);
+
+eventSchema.pre("save", async function (next) {
+  if (this.isModified("eventName")) {
+    this.slug = slugify(this.eventName);
+    const exists = await this.constructor.findOne({
+      slug: this.slug,
+      _id: { $ne: this._id },
+    });
+    if (exists) this.slug = `${this.slug}-${Date.now()}`;
+  }
+  next();
 });
 
-module.exports = mongoose.model('Event', eventSchema);
+module.exports = mongoose.model("Event", eventSchema);

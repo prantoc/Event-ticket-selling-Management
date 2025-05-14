@@ -1,3 +1,4 @@
+const formatFileUrl = require("../../utils/formatFileUrl");
 const Category = require("./category.schema");
 
 exports.createCategory = async (data) => {
@@ -5,11 +6,22 @@ exports.createCategory = async (data) => {
 };
 
 exports.getAllCategories = async () => {
-  return await Category.find().sort({ order: 1 });
+  const categories = await Category.find().sort({ order: 1 });
+
+  return categories.map((category) => {
+    if (category.icon) {
+      category.icon = formatFileUrl(category.icon);
+    }
+    return category;
+  });
 };
 
 exports.getCategoryById = async (id) => {
-  return await Category.findById(id);
+  const data = await Category.findById(id);
+  if (data.icon) {
+    data.icon = formatFileUrl(data.icon);
+  }
+  return data;
 };
 
 exports.updateCategory = async (id, data) => {

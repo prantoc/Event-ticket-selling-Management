@@ -12,6 +12,7 @@ module.exports = {
     jwt_refresh_expires_in: process.env.JWT_REFRESH_EXPIRES_IN,
     NODE_ENV: process.env.NODE_ENV,
     client_url: process.env.CLIENT_URL,
+    backend_url: process.env.BACKEND_URL,
     mail_host: process.env.MAIL_HOST,
     mail_port: process.env.MAIL_PORT,
     mail_user: process.env.MAIL_USER,

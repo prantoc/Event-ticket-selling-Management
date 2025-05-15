@@ -14,6 +14,17 @@ const users = catchAsync(async (req, res) => {
     });
 })
 
+const getUserByID = catchAsync(async (req, res) => {
+    const id = req.user.userId;
+    
+    const result = await UserService.getUserByID(id);
+    sendResponse(res, {
+        success: true,
+        message: 'User fetched successfully',
+        data: result,
+        statusCode: httpStatus.OK
+    });
+})
 
 const createUser = catchAsync(async (req, res) => {
     const result = await UserService.createUser(req.body);
@@ -25,8 +36,21 @@ const createUser = catchAsync(async (req, res) => {
     });
 })
 
-const updateUser = catchAsync(async (req, res) => {
+const updateUserByAdmin = catchAsync(async (req, res) => {
     const { id } = req.params;
+    const result = await UserService.updateUser(id, req.body);
+    sendResponse(res, {
+        success: true,
+        message: 'User updated successfully',
+        data: result,
+        statusCode: httpStatus.OK
+    });
+})
+const updateUser = catchAsync(async (req, res) => {
+    const  id  = req.user.userId;
+    console.log(id);
+    console.log(req.body) ;
+    
     const result = await UserService.updateUser(id, req.body);
     sendResponse(res, {
         success: true,
@@ -65,6 +89,8 @@ const UserController = {
     createUser,
     updateUser,
     deleteUser,
-    updateAccountStatus
+    updateAccountStatus,
+    updateUserByAdmin,
+    getUserByID
 }
 module.exports = UserController

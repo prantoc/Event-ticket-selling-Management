@@ -3,11 +3,11 @@ const eventService = require('./event.service');
 
 exports.createEvent = async (req, res) => {
   try {
-    if (!req.files || req.files.length === 0) {
-        return errorResponse(res, "Event image is required", 400);
-        }
-    const eventImages = req.files.map((file) => file.path);
-    const event = await eventService.createEvent({ ...req.body, organizerId: req.user.userId, eventImages });
+    // if (!req.files || req.files.length === 0) {
+    //     return errorResponse(res, "Event image is required", 400);
+    //     }
+    // const eventImages = req.files.map((file) => file.path);
+    const event = await eventService.createEvent({ ...req.body, organizerId: req.user.userId });
     return successResponse(res, "Event created successfully", event);
   } catch (err) {
     return errorResponse(res, "Failed to create event", 500, err.message);

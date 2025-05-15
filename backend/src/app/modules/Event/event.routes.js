@@ -7,17 +7,17 @@ const { uploadMedia } = require("../../middleware/multerConfig");
 // Organizer routes
 router.post(
   "/",
-  auth("user"),
-  uploadMedia.array("images"),
+  auth("admin","user"),
+  // uploadMedia.array("images"),
   eventController.createEvent
 );
 router.put(
   "/:id",
-  auth("user"),
+  auth("admin","user"),
   uploadMedia.array("images"),
   eventController.updateEvent
 );
-router.delete("/:id", auth("user"), eventController.deleteEvent);
+router.delete("/:id", auth("admin","user"), eventController.deleteEvent);
 
 // Public routes
 router.get("/", eventController.getAllEvents);

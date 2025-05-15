@@ -9,36 +9,36 @@ const auth = require("../../middleware/auth");
 
 router.post(
   "/",
-  auth("superadmin", "admin", "user"),
+  auth("superAdmin", "admin", "user"),
   uploadMedia.single("icon"),
   setRelativePath,
   categoryController.createCategory
 );
 router.get(
   "/",
-  auth("admin", "superadmin", "user"),
+  auth("admin", "superAdmin", "user"),
   categoryController.getCategories
 );
 router.get(
   "/:id",
-  auth("admin", "superadmin", "user"),
+  auth("admin", "superAdmin", "user"),
   categoryController.getCategory
 );
 router.put(
   "/:id",
   uploadMedia.single("icon"),
   setRelativePath,
-  auth("admin", "superadmin"),
+  auth("admin", "superAdmin"),
   categoryController.updateCategory
 );
 router.put(
   "/:id/approve",
-  auth("admin", "superadmin"),
+  auth("admin", "superAdmin"),
   categoryController.approveCategory
 );
 router.delete(
   "/:id",
-  auth("admin", "superadmin"),
+  auth("admin", "superAdmin"),
   categoryController.deleteCategory
 );
 

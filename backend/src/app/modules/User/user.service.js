@@ -21,6 +21,12 @@ const users = async (query,adminId) => {
   };
 };
 
+const getUserByID = async (id) => {
+  const user = await UserModel.findOne({ _id: id, isDeleted: false });
+  if (!user) throw new AppError(httpStatus.NOT_FOUND, "User not found");
+  return user;
+};
+
 const createUser = async (payload) => {
   const isExist = await UserModel.findOne({ email: payload.email });
   if (isExist) {
@@ -78,6 +84,7 @@ const UserService = {
   updateUser,
   deleteUser,
   updateAccountStatus,
+  getUserByID,
 };
 
 module.exports = UserService;

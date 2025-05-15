@@ -4,20 +4,21 @@ const categoryService = require("./category.service");
 
 exports.createCategory = async (req, res) => {
   try {
+    const user = req.user;
     const icon = req.file ? req.file.path : null;
     const category = await categoryService.createCategory({
       ...req.body,
       icon,
+      isActive: user.role === "user" ? false : true,
     });
+
     res.status(201).json({ success: true, data: category });
   } catch (err) {
-    res
-      .status(400)
-      .json({
-        success: false,
-        message: "Failed to create category",
-        error: err.message,
-      });
+    res.status(400).json({
+      success: false,
+      message: "Failed to create category",
+      error: err.message,
+    });
   }
 };
 
@@ -26,13 +27,11 @@ exports.getCategories = async (req, res) => {
     const categories = await categoryService.getAllCategories();
     res.json({ success: true, data: categories });
   } catch (err) {
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Failed to get categories",
-        error: err.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Failed to get categories",
+      error: err.message,
+    });
   }
 };
 
@@ -45,13 +44,11 @@ exports.getCategory = async (req, res) => {
         .json({ success: false, message: "Category not found" });
     res.json({ success: true, data: category });
   } catch (err) {
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Failed to fetch category",
-        error: err.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch category",
+      error: err.message,
+    });
   }
 };
 
@@ -73,7 +70,7 @@ exports.updateCategory = async (req, res) => {
 
     if (req.file) {
       // New icon uploaded
-      updateData.icon = req.file.path; 
+      updateData.icon = req.file.path;
 
       // Remove old icon if exists
       if (existingCategory.icon) {
@@ -110,6 +107,33 @@ exports.updateCategory = async (req, res) => {
   }
 };
 
+exports.approveCategory = async (req, res) => {
+  try {
+    const approvedCategory = await categoryService.updateCategory(req.params.id, { isActive: true });
+
+    if (!approvedCategory) {
+      return res.status(404).json({
+        success: false,
+        message: "Category not found",
+        error: "",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Category approved successfully",
+      data: approvedCategory,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to approve category",
+      error: err.message,
+    });
+  }
+};
+
+
 exports.deleteCategory = async (req, res) => {
   try {
     const deleted = await categoryService.deleteCategory(req.params.id);
@@ -134,12 +158,10 @@ exports.deleteCategory = async (req, res) => {
       message: "Category deleted and order normalized",
     });
   } catch (err) {
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Failed to delete category",
-        error: err.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete category",
+      error: err.message,
+    });
   }
 };

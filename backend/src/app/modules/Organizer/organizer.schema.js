@@ -37,11 +37,11 @@ const organizerProfileSchema = new mongoose.Schema({
     enum: ['pending', 'approved', 'rejected'],
     default: 'pending'
   },
-  verificationDocuments: [{
-    documentType: String,
-    documentUrl: String,
-    uploadedAt: Date
-  }],
+  // verificationDocuments: [{
+  //   documentType: String,
+  //   documentUrl: String,
+  //   uploadedAt: Date
+  // }],
   rejectionReason: String,
   stripeConnectAccountId: {
     type: String,
@@ -49,7 +49,7 @@ const organizerProfileSchema = new mongoose.Schema({
   },
   commissionRate: {
     type: Number,
-    default: 5, // 5% default commission
+    default: 0,
     min: 0,
     max: 100
   },

@@ -1,3 +1,4 @@
+const UserService = require("../User/user.service");
 const organizerService = require("./organizer.service");
 
 // Create organizer profile
@@ -7,6 +8,16 @@ exports.createProfile = async (req, res) => {
     const logo = req.file ? req.file.path : null;
     const data = { ...req.body, userId, logo };
     const profile = await organizerService.createOrganizerProfile(data);
+    if (!profile) {
+      return res.status(400).json({
+        success: false,
+        message: "Failed to create organizer profile",
+        error: "",
+      });
+    }
+    const userRoleUpdate = await UserService.updateUser(userId, {
+      role: "organizer",
+    });
     res.status(201).json(profile);
   } catch (err) {
     res.status(400).json({ message: err.message });

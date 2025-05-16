@@ -16,7 +16,11 @@ router.post(
   UserController.createUser
 );
 
-router.patch("/me", auth("user","admin","superAdmin"), UserController.updateUser);
+router.patch(
+  "/me",
+  auth("user", "organizer", "admin", "superAdmin"),
+  UserController.updateUser
+);
 router.patch("/:id", auth("superAdmin"), UserController.updateUserByAdmin);
 router.patch(
   "/:id/status",
@@ -25,6 +29,10 @@ router.patch(
   UserController.updateAccountStatus
 );
 router.delete("/:id", auth("superAdmin"), UserController.deleteUser);
-router.get("/me", auth("user","admin","superAdmin"), UserController.getUserByID);
+router.get(
+  "/me",
+  auth("user", "organizer", "admin", "superAdmin"),
+  UserController.getUserByID
+);
 const userRoutes = router;
 module.exports = userRoutes;

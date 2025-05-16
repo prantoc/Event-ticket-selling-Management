@@ -22,100 +22,72 @@ class QueryBuilder {
         return this;
     }
 
-    // filter(filterableFields) {
+   
+  filter(filterableFields = []) {
+  const queryObj = { ...this.query };
+  const mongoQuery = {};
 
-    //     const queryObj = { ...this.query }; // copy
+  for (const key of filterableFields) {
+    if (queryObj[key] !== undefined) {
+      const value = queryObj[key];
 
-    //     if (queryObj.date) {
-    //         queryObj.date = {
-    //             $gte: new Date(queryObj.date).toISOString()
-    //         }
-    //     }
+      // Date filtering (day-based)
+      if (key === 'date') {
+        mongoQuery.$or = [
+          {
+            date: {
+              $gte: new Date(`${value}T00:00:00.000Z`),
+              $lt: new Date(`${value}T23:59:59.999Z`),
+            },
+          },
+          {
+            billingDate: {
+              $gte: new Date(`${value}T00:00:00.000Z`),
+              $lt: new Date(`${value}T23:59:59.999Z`),
+            },
+          },
+        ];
+      }
 
-    //     if (queryObj.month) {
-    //         const [year, month] = queryObj.month.split('-').map(Number);
-    //         const startOfMonth = new Date(year, month - 1, 1);
-    //         const endOfMonth = new Date(year, month, 0, 23, 59, 59, 999); // last day of the month
+      // Month filtering
+      else if (key === 'month') {
+        const startDate = new Date(`${value}-01`);
+        const endDate = new Date(startDate);
+        endDate.setMonth(endDate.getMonth() + 1);
 
-    //         queryObj.date = { $gte: startOfMonth.toISOString(), $lte: endOfMonth.toISOString() };
-    //         delete queryObj.month; // Clean up query to avoid re-filtering
-    //     }
-    //     // Filtering
-    //     const excludeFields = filterableFields ?? ['searchTerm', 'sort', 'limit', 'page', 'fields'];
+        mongoQuery.date = {
+          $gte: startDate.toISOString(),
+          $lt: endDate.toISOString(),
+        };
+      }
 
-    //     excludeFields.forEach((el) => delete queryObj[el]);
+      // Exact match for ObjectId-like filters
+      else if (
+        ['_id', 'id', 'eventCategory', 'organizerId', 'userId', 'category'].includes(key)
+      ) {
+        mongoQuery[key] = value;
+      }
 
-    //     this.modelQuery = this.modelQuery.find(queryObj);
+      // Case-insensitive match for strings
+      else if (typeof value === 'string') {
+        mongoQuery[key] = { $regex: new RegExp(`^${value}$`, 'i') };
+      }
 
-    //     return this;
-    // }
-    filter(filterableFields = []) {
-        const queryObj = { ...this.query };
-
-        const mongoQuery = {};
-
-
-        for (const key of filterableFields) {
-
-            if (queryObj[key] !== undefined) {
-                if (key === 'date') {
-                    // mongoQuery.date = {
-                    //     $gte: new Date(queryObj.date).toISOString(),
-                    // };
-                    // mongoQuery.billingDate = {
-                    //     $gte: new Date(queryObj.date).toISOString(),
-                    // };
-                    // const dateISO = new Date(queryObj.date).toISOString();
-                    // mongoQuery.$or = [
-                    //     { date: { $eq: dateISO } },
-                    //     { billingDate: { $gte: dateISO } },
-                    // ];
-                    mongoQuery.$or = [
-                        {
-                            date: {
-                                $gte: new Date(`${queryObj.date}T00:00:00.000Z`),
-                                $lt: new Date(`${queryObj.date}T23:59:59.999Z`),
-                            },
-                        },
-                        {
-                            billingDate: {
-                                $gte: new Date(`${queryObj.date}T00:00:00.000Z`),
-                                $lt: new Date(`${queryObj.date}T23:59:59.999Z`),
-                            },
-                        },
-                    ];
-                } else if (key === 'month') {
-                    const startDate = new Date(`${queryObj.month}-01`);
-                    const endDate = new Date(startDate);
-                    endDate.setMonth(endDate.getMonth() + 1);
-
-                    mongoQuery.date = {
-                        $gte: startDate.toISOString(),
-                        $lt: endDate.toISOString(),
-                    };
-                } else {
-                    // mongoQuery[key] = queryObj[key];
-                    const value = queryObj[key];
-
-                    if (key !== 'limit' && key !== 'page' && key !== 'searchTerm') {
-                        mongoQuery[key] =
-                            typeof value === 'string'
-                                ? { $regex: new RegExp(`^${value}$`, 'i') } // case-insensitive exact match
-                                : value;
-                    }
-
-                }
-            }
-        }
-
-        // this.modelQuery = this.modelQuery.find(mongoQuery);
-        this.modelQuery = this.modelQuery.find({
-            ...this.modelQuery.getFilter(),
-            ...mongoQuery,
-        });
-
-        return this;
+      // Default: use raw value
+      else {
+        mongoQuery[key] = value;
+      }
     }
+  }
+
+  this.modelQuery = this.modelQuery.find({
+    ...this.modelQuery.getFilter(),
+    ...mongoQuery,
+  });
+
+  return this;
+}
+
 
     sort() {
         const sort =

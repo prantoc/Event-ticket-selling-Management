@@ -15,10 +15,10 @@ router.post(
   setRelativePath,
   organizerController.createProfile
 );
-router.get("/me", auth("user"), organizerController.getProfile);
+router.get("/me", auth("organizer"), organizerController.getProfile);
 router.put(
   "/me",
-  auth("user"),
+  auth("organizer"),
   uploadMedia.single("logo"),
   setRelativePath,
   organizerController.updateProfile

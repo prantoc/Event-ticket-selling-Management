@@ -63,7 +63,7 @@ class QueryBuilder {
 
       // Exact match for ObjectId-like filters
       else if (
-        ['_id', 'id', 'eventCategory', 'organizerId', 'userId', 'category'].includes(key)
+        ['_id', 'id', 'eventCategory', 'organizerId', 'userId', 'category','eventId'].includes(key)
       ) {
         mongoQuery[key] = value;
       }

@@ -60,7 +60,7 @@ exports.updateProfile = async (req, res) => {
       req.user.userId,
       req.body
     );
-    res.json(updated);
+    res.json({ success: true, message: "Profile updatedd", data: updated });
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
@@ -191,7 +191,6 @@ exports.deleteOrganizer = async (req, res) => {
         error: "",
       });
     }
-    res.status(400).json({ message: err.message }); 
-    
+    res.status(400).json({ message: err.message });
   }
 };

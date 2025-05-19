@@ -56,15 +56,21 @@ exports.getProfile = async (req, res) => {
 // Update organizer profile
 exports.updateProfile = async (req, res) => {
   try {
-    const updated = await organizerService.updateOrganizerProfile(
-      req.user.userId,
-      req.body
-    );
-    res.json({ success: true, message: "Profile updatedd", data: updated });
+    const userId = req.user.userId;
+    const data = { ...req.body };
+
+    // Only add logo if it was uploaded
+    if (req.file) {
+      data.logo = req.file.path;
+    }
+
+    const updated = await organizerService.updateOrganizerProfile(userId, data);
+    res.json({ success: true, message: "Profile updated", data: updated });
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
 };
+
 
 // Admin - Get all organizers
 exports.getAllOrganizers = async (req, res) => {

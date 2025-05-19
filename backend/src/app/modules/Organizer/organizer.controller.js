@@ -56,10 +56,10 @@ exports.getProfile = async (req, res) => {
 // Update organizer profile
 exports.updateProfile = async (req, res) => {
   try {
-    const updated = await organizerService.updateOrganizerProfile(
-      req.user.userId,
-      req.body
-    );
+    const userId = req.user.userId;
+    const logo = req.file ? req.file.path : null;
+    const data = { ...req.body, logo };
+    const updated = await organizerService.updateOrganizerProfile(userId, data);
     res.json({ success: true, message: "Profile updatedd", data: updated });
   } catch (err) {
     res.status(400).json({ message: err.message });

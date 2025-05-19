@@ -9,19 +9,19 @@ const auth = require("../../middleware/auth");
 
 router.post(
   "/",
-  auth("superAdmin", "admin", "user"),
+  auth("superAdmin", "admin", "user", "organizer"),
   uploadMedia.single("icon"),
   setRelativePath,
   categoryController.createCategory
 );
 router.get(
   "/",
-  auth("admin", "superAdmin", "user"),
+  auth("admin", "superAdmin", "user", "organizer"),
   categoryController.getCategories
 );
 router.get(
   "/:id",
-  auth("admin", "superAdmin", "user"),
+  auth("admin", "superAdmin", "user", "organizer"),
   categoryController.getCategory
 );
 router.put(

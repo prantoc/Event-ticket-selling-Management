@@ -32,7 +32,7 @@ exports.createBooking = async (bookingData) => {
     enrichedTickets.flatMap((tier) =>
       Array.from({ length: tier.quantity }).map(async () => {
         const ticketId = uuidv4();
-        const qrData = `${backend_url}/tickets/${ticketId}`;
+        const qrData = `${backend_url}/api/v1/bookings/tickets/${ticketId}`;
         const qrCodeUrl = await QRCode.toDataURL(qrData); // base64 image
 
         return {
@@ -111,7 +111,7 @@ exports.downLoadticket = async (bookingId) => {
   const filePath = path.join(dirPath, `ticket-${booking._id}.pdf`);
 
   // Generate the PDF
-  await generateTicketPDF(booking, filePath); // Ensure this is async if your generator supports it
+  await generateTicketPDF(booking, filePath); 
 
   return { ticketGenerated: true, filePath };
 };

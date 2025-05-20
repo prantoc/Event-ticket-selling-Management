@@ -8,10 +8,8 @@ exports.createOrganizerProfile = async (data) => {
 };
 
 exports.getOrganizerByUserId = async (userId) => {
-  const data = await Organizer.findOne({ userId }).lean(); // use .lean() for plain object
+  const data = await Organizer.findOne({ userId }).lean();
   if (!data) return null;
-
-  // Format the logo path to include full URL
   if (data.logo) {
     data.logo = formatFileUrl(data.logo);
   }
@@ -25,7 +23,10 @@ exports.updateOrganizerProfile = async (userId, updateData) => {
 };
 
 exports.getAllOrganizers = async (query) => {
-  const organizersQuery = new QueryBuilder(Organizer.find().populate("userId", "name email"), query)
+  const organizersQuery = new QueryBuilder(
+    Organizer.find().populate("userId", "name email"),
+    query
+  )
     .filter(["verificationStatus"])
     .sort()
     .paginate()
@@ -33,8 +34,6 @@ exports.getAllOrganizers = async (query) => {
 
   const organizers = await organizersQuery.modelQuery;
   const meta = await organizersQuery.countTotal();
-
-  // Manual filtering based on userId.name, userId.email, and organizationName
   let filteredOrganizers = organizers;
 
   if (query.searchTerm) {
@@ -65,7 +64,6 @@ exports.getAllOrganizers = async (query) => {
     meta,
   };
 };
-
 
 exports.approveOrganizer = async (userId, adminId) => {
   return await Organizer.findOneAndUpdate(

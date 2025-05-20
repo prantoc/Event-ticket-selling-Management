@@ -8,6 +8,8 @@ exports.createEvent = async (req, res) => {
         return errorResponse(res, "Event image is required", 400);
         }
     const eventImages = req.files.map((file) => file.path);
+    console.log(eventImages);
+    
     const event = await eventService.createEvent({ ...req.body, organizerId: req.user.userId,eventImages });
     return successResponse(res, "Event created successfully", event);
   } catch (err) {

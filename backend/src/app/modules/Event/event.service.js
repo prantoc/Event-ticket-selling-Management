@@ -1,4 +1,5 @@
 const QueryBuilder = require("../../builder/QueryBuilder");
+const formatFileUrl = require("../../utils/formatFileUrl");
 const Event = require("./event.schema");
 
 exports.createEvent = async (eventData) => {
@@ -22,7 +23,12 @@ exports.getAllEvents = async (query) => {
     status: "approved",
   };
   const eventsQuery = new QueryBuilder(
-    Event.find(baseFilter).populate("organizerId eventCategory"),
+    Event.find(baseFilter)
+      .populate({
+        path: "organizerId",
+        select: "name email",
+      })
+      .populate("eventCategory"),
     query
   )
     .search(searchableFields)
@@ -36,8 +42,11 @@ exports.getAllEvents = async (query) => {
 
   // Format image URLs
   const formattedEvents = events.map((event) => {
-    if (Array.isArray(event.images)) {
-      event.images = event.images.map((img) => formatFileUrl(img));
+    if (event.eventCategory) {
+      event.eventCategory.icon = formatFileUrl(event.eventCategory?.icon);
+    }
+    if (Array.isArray(event.eventImages)) {
+      event.eventImages = event.eventImages.map((img) => formatFileUrl(img));
     }
     return event;
   });
@@ -47,13 +56,18 @@ exports.getAllEvents = async (query) => {
   };
 };
 
-exports.getAllEventsByAdmin = async (query)=>{
+exports.getAllEventsByAdmin = async (query) => {
   const eventsQuery = new QueryBuilder(
-    Event.find().populate("organizerId eventCategory"),
+    Event.find()
+      .populate({
+        path: "organizerId",
+        select: "name email",
+      })
+      .populate("eventCategory"),
     query
   )
     .search(["eventName", "description", "tags"])
-    .filter(["eventCategory", "eventDate","status"])
+    .filter(["eventCategory", "eventDate", "status"])
     .sort()
     .paginate()
     .fields();
@@ -63,8 +77,11 @@ exports.getAllEventsByAdmin = async (query)=>{
 
   // Format image URLs
   const formattedEvents = events.map((event) => {
-    if (Array.isArray(event.images)) {
-      event.images = event.images.map((img) => formatFileUrl(img));
+    if (event.eventCategory) {
+      event.eventCategory.icon = formatFileUrl(event.eventCategory?.icon);
+    }
+    if (Array.isArray(event.eventImages)) {
+      event.eventImages = event.eventImages.map((img) => formatFileUrl(img));
     }
     return event;
   });
@@ -72,7 +89,7 @@ exports.getAllEventsByAdmin = async (query)=>{
     events: formattedEvents,
     meta,
   };
-}
+};
 
 exports.getEventById = async (id) => {
   return await Event.findById(id).populate("organizerId eventCategory");

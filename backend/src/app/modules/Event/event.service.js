@@ -50,6 +50,7 @@ exports.getAllEvents = async (query) => {
     }
     return event;
   });
+
   return {
     events: formattedEvents,
     meta,
@@ -77,6 +78,43 @@ exports.getAllEventsByAdmin = async (query) => {
 
   // Format image URLs
   const formattedEvents = events.map((event) => {
+    if (Array.isArray(event.eventImages)) {
+      event.eventImages = event.eventImages.map((img) => formatFileUrl(img));
+    }
+    return event;
+  });
+
+  return {
+    events: formattedEvents,
+    meta,
+  };
+};
+
+exports.getEventById = async (id) => {
+  const event = await Event.findById(id)
+    .populate({
+      path: "organizerId",
+      select: "name email",
+    })
+    .populate("eventCategory");
+  if (!event) return null;
+  if (Array.isArray(event.eventImages)) {
+    event.eventImages = event.eventImages.map((img) => formatFileUrl(img));
+  }
+  if (event.eventCategory) {
+    event.eventCategory.icon = formatFileUrl(event.eventCategory?.icon);
+  }
+  return event;
+};
+
+exports.getEventByOrganizer = async (organizerId) => {
+  const events = await Event.find({ organizerId })
+    .populate({
+      path: "organizerId",
+      select: "name email",
+    })
+    .populate("eventCategory");
+  const formattedEvents = events.map((event) => {
     if (event.eventCategory) {
       event.eventCategory.icon = formatFileUrl(event.eventCategory?.icon);
     }
@@ -85,20 +123,7 @@ exports.getAllEventsByAdmin = async (query) => {
     }
     return event;
   });
-  return {
-    events: formattedEvents,
-    meta,
-  };
-};
-
-exports.getEventById = async (id) => {
-  return await Event.findById(id).populate("organizerId eventCategory");
-};
-
-exports.getEventByOrganizer = async (organizerId) => {
-  return await Event.find({ organizerId }).populate(
-    "organizerId eventCategory"
-  );
+  return formattedEvents;
 };
 
 exports.findByIdAndUpdate = async (eventId, updatePayload) => {

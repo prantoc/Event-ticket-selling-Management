@@ -5,21 +5,41 @@ const {
   uploadMedia,
   setRelativePath,
 } = require("../../middleware/multerConfig");
+const auth = require("../../middleware/auth");
 
 router.post(
   "/",
+  auth("superAdmin", "admin", "user", "organizer"),
   uploadMedia.single("icon"),
   setRelativePath,
   categoryController.createCategory
 );
-router.get("/", categoryController.getCategories);
-router.get("/:id", categoryController.getCategory);
+router.get(
+  "/",
+  auth("admin", "superAdmin", "user", "organizer"),
+  categoryController.getCategories
+);
+router.get(
+  "/:id",
+  auth("admin", "superAdmin", "user", "organizer"),
+  categoryController.getCategory
+);
 router.put(
   "/:id",
   uploadMedia.single("icon"),
   setRelativePath,
+  auth("admin", "superAdmin"),
   categoryController.updateCategory
 );
-router.delete("/:id", categoryController.deleteCategory);
+router.put(
+  "/:id/approve",
+  auth("admin", "superAdmin"),
+  categoryController.approveCategory
+);
+router.delete(
+  "/:id",
+  auth("admin", "superAdmin"),
+  categoryController.deleteCategory
+);
 
 module.exports = router;

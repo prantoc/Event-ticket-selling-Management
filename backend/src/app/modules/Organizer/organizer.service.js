@@ -1,3 +1,4 @@
+const QueryBuilder = require("../../builder/QueryBuilder");
 const { backend_url } = require("../../config");
 const formatFileUrl = require("../../utils/formatFileUrl");
 const Organizer = require("./organizer.schema");
@@ -7,10 +8,8 @@ exports.createOrganizerProfile = async (data) => {
 };
 
 exports.getOrganizerByUserId = async (userId) => {
-  const data = await Organizer.findOne({ userId }).lean(); // use .lean() for plain object
+  const data = await Organizer.findOne({ userId }).lean();
   if (!data) return null;
-
-  // Format the logo path to include full URL
   if (data.logo) {
     data.logo = formatFileUrl(data.logo);
   }
@@ -23,8 +22,47 @@ exports.updateOrganizerProfile = async (userId, updateData) => {
   });
 };
 
-exports.getAllOrganizers = async () => {
-  return await Organizer.find().populate("userId", "name email");
+exports.getAllOrganizers = async (query) => {
+  const organizersQuery = new QueryBuilder(
+    Organizer.find().populate("userId", "name email"),
+    query
+  )
+    .filter(["verificationStatus"])
+    .sort()
+    .paginate()
+    .fields();
+
+  const organizers = await organizersQuery.modelQuery;
+  const meta = await organizersQuery.countTotal();
+  let filteredOrganizers = organizers;
+
+  if (query.searchTerm) {
+    const searchText = query.searchTerm.toLowerCase();
+    filteredOrganizers = organizers.filter((organizer) => {
+      const orgName = organizer.organizationName?.toLowerCase() || "";
+      const userName = organizer.userId?.name?.toLowerCase() || "";
+      const userEmail = organizer.userId?.email?.toLowerCase() || "";
+
+      return (
+        orgName.includes(searchText) ||
+        userName.includes(searchText) ||
+        userEmail.includes(searchText)
+      );
+    });
+  }
+
+  const formattedOrganizers = filteredOrganizers.map((organizer) => {
+    const data = organizer.toObject();
+    if (data.logo) {
+      data.logo = formatFileUrl(data.logo);
+    }
+    return data;
+  });
+
+  return {
+    organizers: formattedOrganizers,
+    meta,
+  };
 };
 
 exports.approveOrganizer = async (userId, adminId) => {
@@ -51,7 +89,6 @@ exports.rejectOrganizer = async (userId, reason, adminId) => {
     { new: true }
   );
 };
-
 
 exports.deleteOrganizerByUserId = async (userId) => {
   const deleted = await Organizer.findOneAndDelete({ userId });

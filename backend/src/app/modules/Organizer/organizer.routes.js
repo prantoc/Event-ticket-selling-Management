@@ -10,23 +10,39 @@ const {
 // Organizer routes (self)
 router.post(
   "/",
-  auth('superAdmin', 'admin',"user"),
+  auth("superAdmin", "admin", "user", "organizer"),
   uploadMedia.single("logo"),
   setRelativePath,
   organizerController.createProfile
 );
-router.get("/me", auth("user"), organizerController.getProfile);
+router.get("/me", auth("organizer"), organizerController.getProfile);
 router.put(
   "/me",
-  auth("user"),
+  auth("organizer"),
   uploadMedia.single("logo"),
   setRelativePath,
   organizerController.updateProfile
 );
 
 // Admin routes
-router.get("/", auth('superAdmin', 'admin'), organizerController.getAllOrganizers);
-router.put("/:userId/approve", auth('superAdmin', 'admin'), organizerController.approve);
-router.put("/:userId/reject", auth('superAdmin', 'admin'), organizerController.reject);
-router.delete("/:userId/delete",auth('superAdmin', 'admin') , organizerController.deleteOrganizer);
+router.get(
+  "/",
+  auth("superAdmin", "admin"),
+  organizerController.getAllOrganizers
+);
+router.put(
+  "/:userId/approve",
+  auth("superAdmin", "admin"),
+  organizerController.approve
+);
+router.put(
+  "/:userId/reject",
+  auth("superAdmin", "admin"),
+  organizerController.reject
+);
+router.delete(
+  "/:userId/delete",
+  auth("superAdmin", "admin"),
+  organizerController.deleteOrganizer
+);
 module.exports = router;

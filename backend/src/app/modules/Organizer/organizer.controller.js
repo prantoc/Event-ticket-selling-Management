@@ -15,12 +15,13 @@ exports.createProfile = async (req, res) => {
         error: "",
       });
     }
-    const userRoleUpdate = await UserService.updateUser(userId, {
-      role: "organizer",
+    res.status(201).json({
+      success: true,
+      message: "Organizer created successfully",
+      data: profile,
     });
-    res.status(201).json(profile);
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    res.status(400).json({ success: false, message: err.message });
   }
 };
 
@@ -32,9 +33,10 @@ exports.getProfile = async (req, res) => {
     );
 
     if (!profile) {
-      return res.status(404).json({
+      return res.status(200).json({
         success: false,
         message: "Profile not found",
+        data: [],
         error: "",
       });
     }
@@ -71,23 +73,15 @@ exports.updateProfile = async (req, res) => {
   }
 };
 
-
 // Admin - Get all organizers
 exports.getAllOrganizers = async (req, res) => {
   try {
-    const list = await organizerService.getAllOrganizers();
-    if (!list || list.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "No organizers found",
-        error: "",
-      });
-    }
-
+    const list = await organizerService.getAllOrganizers(req.query);
     res.status(200).json({
       success: true,
       message: "Organizer fetched successfully",
-      data: list,
+      data: list.organizers,
+      meta: list.meta,
     });
   } catch (err) {
     res.status(500).json({
@@ -112,6 +106,9 @@ exports.approve = async (req, res) => {
         error: "",
       });
     }
+    const userRoleUpdate = await UserService.updateUser(req.params.userId, {
+      role: "organizer",
+    });
     res.status(200).json({
       success: true,
       message: "Organizer approved successfully",

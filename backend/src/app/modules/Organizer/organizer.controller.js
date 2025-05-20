@@ -75,7 +75,7 @@ exports.updateProfile = async (req, res) => {
 // Admin - Get all organizers
 exports.getAllOrganizers = async (req, res) => {
   try {
-    const list = await organizerService.getAllOrganizers();
+    const list = await organizerService.getAllOrganizers(req.query);
     if (!list || list.length === 0) {
       return res.status(404).json({
         success: false,
@@ -87,7 +87,8 @@ exports.getAllOrganizers = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Organizer fetched successfully",
-      data: list,
+      data: list.organizers,
+      meta: list.meta,
     });
   } catch (err) {
     res.status(500).json({

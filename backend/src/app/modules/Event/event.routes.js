@@ -37,7 +37,7 @@ router.get(
 
 // Admin routes
 //approve event by admin
-router.get("/all", auth("admin", "superAdmin"), eventController.getAllEventsByAdmin);
+router.get("/all", auth("admin", "superAdmin","organizer"), eventController.getAllEventsByAdmin);
 router.put(
   "/:id/status",
   auth("admin", "superAdmin"),

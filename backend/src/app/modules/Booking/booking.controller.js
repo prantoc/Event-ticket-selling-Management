@@ -37,7 +37,7 @@ exports.getMyOrders = async (req, res) => {
     const userId = req.user.userId;
     const booking = await BookingService.getBookingsByUserId(userId, query);
     if (!booking) {
-      return res.status(404).json({
+      return res.status(200).json({
         success: false,
         message: "No bookings found",
       });

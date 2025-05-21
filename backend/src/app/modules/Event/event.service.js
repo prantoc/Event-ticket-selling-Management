@@ -78,6 +78,10 @@ exports.getAllEventsByAdmin = async (query) => {
 
   // Format image URLs
   const formattedEvents = events.map((event) => {
+    if (event.eventCategory) {
+      event.eventCategory.icon = formatFileUrl(event.eventCategory?.icon);
+    }
+
     if (Array.isArray(event.eventImages)) {
       event.eventImages = event.eventImages.map((img) => formatFileUrl(img));
     }

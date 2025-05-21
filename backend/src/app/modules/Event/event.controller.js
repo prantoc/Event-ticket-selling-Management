@@ -1,22 +1,23 @@
-const QueryBuilder = require('../../builder/QueryBuilder');
-const { successResponse, errorResponse } = require('../../utils/response');
-const eventService = require('./event.service');
+const QueryBuilder = require("../../builder/QueryBuilder");
+const { successResponse, errorResponse } = require("../../utils/response");
+const eventService = require("./event.service");
 
 exports.createEvent = async (req, res) => {
   try {
     if (!req.files || req.files.length === 0) {
-        return errorResponse(res, "Event image is required", 400);
-        }
+      return errorResponse(res, "Event image is required", 400);
+    }
     const eventImages = req.files.map((file) => file.path);
-    console.log(eventImages);
-    
-    const event = await eventService.createEvent({ ...req.body, organizerId: req.user.userId,eventImages });
+    const event = await eventService.createEvent({
+      ...req.body,
+      organizerId: req.user.userId,
+      eventImages,
+    });
     return successResponse(res, "Event created successfully", event);
   } catch (err) {
     return errorResponse(res, "Failed to create event", 500, err.message);
   }
 };
-
 
 exports.getAllEvents = async (req, res) => {
   try {
@@ -42,19 +43,25 @@ exports.getAllEvents = async (req, res) => {
 
     if (query.thisMonth) {
       const start = new Date(today.getFullYear(), today.getMonth(), 1);
-      const end = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59, 999);
+      const end = new Date(
+        today.getFullYear(),
+        today.getMonth() + 1,
+        0,
+        23,
+        59,
+        59,
+        999
+      );
       query.eventDate = { $gte: start, $lte: end };
       delete query.thisMonth;
     }
 
     const result = await eventService.getAllEvents(query);
 
-    
-
     return res.json({
       success: true,
       message: "Events retrieved",
-      meta:result.meta,
+      meta: result.meta,
       data: result.events,
     });
   } catch (err) {
@@ -74,7 +81,7 @@ exports.getAllEventsByAdmin = async (req, res) => {
     return res.json({
       success: true,
       message: "Events retrieved",
-      meta:result.meta,
+      meta: result.meta,
       data: result.events,
     });
   } catch (err) {
@@ -85,7 +92,6 @@ exports.getAllEventsByAdmin = async (req, res) => {
     });
   }
 };
- 
 
 exports.getEventById = async (req, res) => {
   try {
@@ -98,11 +104,11 @@ exports.getEventById = async (req, res) => {
 };
 
 exports.getEventByOrganizer = async (req, res) => {
-
   try {
     const organizerId = req.user.userId;
     const events = await eventService.getEventByOrganizer(organizerId);
-    if (!events) return errorResponse(res, "No events found for this organizer", 404);
+    if (!events)
+      return errorResponse(res, "No events found for this organizer", 404);
     return successResponse(res, "Events fetched successfully", events);
   } catch (err) {
     return errorResponse(res, "Failed to fetch events", 500, err.message);
@@ -111,7 +117,12 @@ exports.getEventByOrganizer = async (req, res) => {
 
 exports.updateEvent = async (req, res) => {
   try {
-    const event = await eventService.updateEvent(req.params.id, req.body);
+    let eventData = req.body;
+    if (req.files) {
+      const eventImages = req.files.map((file) => file.path);
+      eventData = { ...req.body, eventImages };
+    }
+    const event = await eventService.updateEvent(req.params.id, eventData);
     if (!event) return errorResponse(res, "Event not found", 404);
     return successResponse(res, "Event updated successfully", event);
   } catch (err) {
@@ -159,7 +170,9 @@ exports.updateStatus = async (req, res) => {
     );
 
     if (!updatedEvent) {
-      return res.status(404).json({ success: false, message: "Event not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Event not found" });
     }
 
     return res.json({

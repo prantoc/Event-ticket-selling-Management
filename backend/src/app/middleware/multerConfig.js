@@ -34,9 +34,19 @@ const storage = multer.diskStorage({
 
 // Middleware to override req.file.path with relative path
 const setRelativePath = (req, res, next) => {
-  if (req.file && req._relativePath) {
-    req.file.path = req._relativePath;
+  const processFile = (file) => {
+    const subfolder = file.mimetype.startsWith("image") ? "images" : "videos";
+    file.path = `store/${subfolder}/${file.filename}`;
+  };
+
+  if (req.file) {
+    processFile(req.file);
   }
+
+  if (req.files && Array.isArray(req.files)) {
+    req.files.forEach(processFile);
+  }
+
   next();
 };
 
@@ -49,5 +59,5 @@ const uploadMedia = multer({
 
 module.exports = {
   uploadMedia,
-  setRelativePath, 
+  setRelativePath,
 };

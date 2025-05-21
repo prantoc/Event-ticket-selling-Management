@@ -7,6 +7,7 @@ const path = require("path");
 const fs = require("fs");
 const { backend_url } = require("../../config");
 const generateTicketPDF = require("../../utils/generateTicketPDF");
+const formatFileUrl = require("../../utils/formatFileUrl");
 exports.createBooking = async (bookingData) => {
   const { userId, eventId, tickets, paymentMethod } = bookingData;
   const event = await Event.findById(eventId).populate("organizerId");
@@ -111,7 +112,7 @@ exports.downLoadticket = async (bookingId) => {
   const filePath = path.join(dirPath, `ticket-${booking._id}.pdf`);
 
   // Generate the PDF
-  await generateTicketPDF(booking, filePath); 
+  await generateTicketPDF(booking, filePath);
 
   return { ticketGenerated: true, filePath };
 };

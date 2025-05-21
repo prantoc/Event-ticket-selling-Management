@@ -132,8 +132,8 @@ exports.getBookingsByUserId = async (userId, query) => {
 
   // Format image URLs
   const formattedBookings = bookings.map((booking) => {
-    if (Array.isArray(booking.eventId.images)) {
-      booking.eventId.images = booking.eventId.images.map((img) =>
+    if (Array.isArray(booking.eventId.eventImages)) {
+      booking.eventId.eventImages = booking.eventId.eventImages.map((img) =>
         formatFileUrl(img)
       );
     }

@@ -74,6 +74,12 @@ router.get(
   bookingController.exportAttendees
 );
 
+router.get(
+  "/refunds",
+  auth("admin", "superAdmin", "organizer"),
+  bookingController.getRefundRequests
+);
+
 // Organizer: Process refund
 router.post(
   "/:id/process-refund",

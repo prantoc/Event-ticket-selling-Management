@@ -157,7 +157,7 @@ exports.getBookingsByOrganizer = async (req, res) => {
       query
     );
     if (!booking) {
-      return res.status(404).json({
+      return res.status(200).json({
         success: false,
         message: "No bookings found",
       });

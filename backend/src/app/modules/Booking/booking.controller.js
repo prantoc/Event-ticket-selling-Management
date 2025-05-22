@@ -318,3 +318,20 @@ exports.exportAttendees = async (req, res) => {
       .json({ message: "Export failed", error: err.message });
   }
 };
+
+
+exports.getRefundRequests = async (req, res) => {
+  try {
+    const { eventId, userId } = req.query;
+     const organizerId = req.user.userId;
+    const refundList = await BookingService.getRefundRequests({ organizerId,eventId, userId });
+
+    res.json({ success: true, data: refundList });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch refund requests",
+      error: err.message,
+    });
+  }
+};

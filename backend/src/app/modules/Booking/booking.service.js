@@ -69,8 +69,17 @@ exports.createBooking = async (bookingData) => {
 };
 
 exports.getAllBookings = async (query) => {
+  if (query.eventId === "") {
+    delete query.eventId;
+  }
+  if (query.organizerId === "") {
+    delete query.organizerId;
+  }
   const bookingsQuery = new QueryBuilder(
-    Booking.find().populate("eventId organizerId"),
+    Booking.find()
+      .populate("userId", "name email phone")
+      .populate("eventId", "eventName")
+      .populate("organizerId", "name email phone"),
     query
   )
     .search(["orderNumber"])
@@ -80,16 +89,43 @@ exports.getAllBookings = async (query) => {
     .fields();
 
   const bookings = await bookingsQuery.modelQuery;
+
   const meta = await bookingsQuery.countTotal();
 
-  // Format image URLs
   const formattedBookings = bookings.map((booking) => {
-    if (Array.isArray(booking.eventId.eventImages)) {
-      booking.eventId.eventImages = booking.eventId.eventImages.map((img) =>
-        formatFileUrl(img)
-      );
-    }
-    return booking;
+    const {
+      _id,
+      orderNumber,
+      paymentDetails,
+      refundDetails,
+      userId,
+      eventId,
+      organizerId,
+      ticketDetails,
+      createdAt,
+    } = booking;
+
+    return {
+      _id,
+      orderNumber,
+      paymentDetails,
+      refundDetails,
+      totalTickets: ticketDetails?.length || 0,
+      user: {
+        name: userId?.name,
+        email: userId?.email,
+        phone: userId?.phone,
+      },
+      event: {
+        name: eventId?.eventName,
+      },
+      organizer: {
+        organizerName: organizerId.name,
+        organizerEmail: organizerId.email,
+        organizerPhone: organizerId.phone,
+      },
+      createdAt,
+    };
   });
 
   return {

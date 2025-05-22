@@ -152,8 +152,14 @@ exports.getSingleBooking = async (bookingId) => {
 };
 
 exports.getBookingsByOrganizer = async (organizerId, query) => {
+  // Prevent invalid ObjectId cast
+  if (query.eventId === "") {
+    delete query.eventId;
+  }
   const bookingsQuery = new QueryBuilder(
-    Booking.find({ organizerId }).populate("userId"),
+    Booking.find({ organizerId })
+      .populate("userId", "name email phone")
+      .populate("eventId", "eventName"),
     query
   )
     .search(["orderNumber"])
@@ -163,16 +169,37 @@ exports.getBookingsByOrganizer = async (organizerId, query) => {
     .fields();
 
   const bookings = await bookingsQuery.modelQuery;
+
   const meta = await bookingsQuery.countTotal();
 
-  // Format image URLs
   const formattedBookings = bookings.map((booking) => {
-    if (Array.isArray(booking.eventId.eventImages)) {
-      booking.eventId.eventImages = booking.eventId.eventImages.map((img) =>
-        formatFileUrl(img)
-      );
-    }
-    return booking;
+    const {
+      _id,
+      orderNumber,
+      paymentDetails,
+      refundDetails,
+      userId,
+      eventId,
+      ticketDetails,
+      createdAt,
+    } = booking;
+
+    return {
+      _id,
+      orderNumber,
+      paymentDetails,
+      refundDetails,
+      totalTickets: ticketDetails?.length || 0,
+      user: {
+        name: userId?.name,
+        email: userId?.email,
+        phone: userId?.phone,
+      },
+      event: {
+        name: eventId?.eventName,
+      },
+      createdAt,
+    };
   });
 
   return {
@@ -180,6 +207,7 @@ exports.getBookingsByOrganizer = async (organizerId, query) => {
     meta,
   };
 };
+
 exports.deleteBooking = async (bookingId) => {
   return await Booking.findByIdAndDelete(bookingId);
 };

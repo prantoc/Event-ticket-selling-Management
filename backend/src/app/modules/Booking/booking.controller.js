@@ -288,24 +288,29 @@ exports.getEventBookingStats = async (req, res) => {
 
 exports.exportAttendees = async (req, res) => {
   try {
-    const attendees = await BookingService.getAttendees(
-      req.params.eventId,
-      req.user.userId
-    );
+    const { eventId } = req.query;
+    const organizerId = req.user.userId;
+
+    const attendees = await BookingService.getAttendees(organizerId, eventId);
 
     const fields = [
-      "name",
-      "email",
-      "ticketId",
-      "tierName",
-      "quantity",
-      "status",
+      "serialNumber",
+      "orderNumber",
+      "paymentDetails.method",
+      "paymentDetails.status",
+      "paymentDetails.totalAmount",
+      "totalTickets",
+      "user.name",
+      "user.email",
+      "user.phone",
+      "event.name",
+      "createdAt",
     ];
     const parser = new Parser({ fields });
     const csv = parser.parse(attendees);
 
     res.header("Content-Type", "text/csv");
-    res.attachment(`attendees-${req.params.eventId}.csv`);
+    res.attachment(`attendees-${eventId || "all"}.csv`);
     return res.send(csv);
   } catch (err) {
     return res

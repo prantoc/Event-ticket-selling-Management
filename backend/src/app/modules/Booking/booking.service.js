@@ -402,25 +402,34 @@ exports.getEventBookingStats = async (eventId, organizerId) => {
   };
 };
 
-exports.getAttendees = async (eventId, organizerId) => {
-  const bookings = await Booking.find({ eventId, organizerId }).populate(
-    "userId"
-  );
+exports.getAttendees = async (organizerId, eventId) => {
+  const filter = { organizerId };
+  if (eventId) {
+    filter.eventId = eventId;
+  }
 
-  const attendees = [];
+  const bookings = await Booking.find(filter)
+    .populate("userId", "name email phone")
+    .populate("eventId", "name");
 
-  bookings.forEach((b) => {
-    b.ticketDetails.forEach((t) => {
-      attendees.push({
-        name: b.userId.name,
-        email: b.userId.email,
-        ticketId: t.ticketId,
-        tierName: t.tierName || "N/A",
-        quantity: b.tickets.reduce((sum, tk) => sum + tk.quantity, 0),
-        status: t.status,
-      });
-    });
-  });
-
-  return attendees;
+  return bookings.map((booking, index) => ({
+    serialNumber: index + 1,
+    orderNumber: booking.orderNumber,
+    paymentDetails: {
+      method: booking.paymentDetails?.method,
+      status: booking.paymentDetails?.status,
+      totalAmount: booking.paymentDetails?.totalAmount,
+    },
+    totalTickets: booking.ticketDetails?.length || 0,
+    user: {
+      name: booking.userId?.name || "N/A",
+      email: booking.userId?.email || "N/A",
+      phone: booking.userId?.phone || "N/A",
+    },
+    event: {
+      name: booking.eventId?.name || "N/A",
+    },
+    createdAt: booking.createdAt,
+  }));
 };
+

@@ -410,7 +410,7 @@ exports.getAttendees = async (organizerId, eventId) => {
 
   const bookings = await Booking.find(filter)
     .populate("userId", "name email phone")
-    .populate("eventId", "name");
+    .populate("eventId", "eventName");
 
   return bookings.map((booking, index) => ({
     serialNumber: index + 1,
@@ -427,9 +427,43 @@ exports.getAttendees = async (organizerId, eventId) => {
       phone: booking.userId?.phone || "N/A",
     },
     event: {
-      name: booking.eventId?.name || "N/A",
+      name: booking.eventId?.eventName || "N/A",
     },
     createdAt: booking.createdAt,
   }));
 };
 
+// services/refundService.js
+
+exports.getRefundRequests = async ({ organizerId, eventId, userId }) => {
+  if (!organizerId) {
+    throw new Error("Organizer ID is required.");
+  }
+
+  const query = {
+    organizerId,
+    "refundDetails.status": { $ne: "none" }, // Only refund requests
+  };
+
+  if (eventId) query.eventId = eventId;
+  if (userId) query.userId = userId;
+
+  const refunds = await Booking.find(query)
+    .populate("userId", "name email phone")
+    .populate("eventId", "eventName")
+    .sort({ "refundDetails.createdAt": -1 });
+
+  return refunds.map((booking) => ({
+    orderNumber: booking.orderNumber,
+    user: {
+      name: booking.userId?.name || "N/A",
+      email: booking.userId?.email || "N/A",
+      phone: booking.userId?.phone || "N/A",
+    },
+    event: {
+      name: booking.eventId?.eventName || "N/A",
+    },
+    reason: booking.refundDetails?.reason || "N/A",
+    requestedAt: booking.refundDetails?.createdAt || booking.createdAt,
+  }));
+};

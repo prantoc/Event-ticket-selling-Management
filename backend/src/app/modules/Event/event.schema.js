@@ -11,7 +11,7 @@ const eventSchema = new mongoose.Schema(
     eventName: {
       type: String,
       required: true,
-      maxlength: 200,
+      maxlength: 1000,
     },
     slug: {
       type: String,
@@ -21,7 +21,7 @@ const eventSchema = new mongoose.Schema(
     description: {
       type: String,
       required: true,
-      maxlength: 5000,
+      maxlength: 10000,
     },
     eventCategory: {
       type: mongoose.Schema.Types.ObjectId,

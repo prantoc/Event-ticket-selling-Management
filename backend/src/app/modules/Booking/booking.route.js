@@ -69,7 +69,7 @@ router.get(
 
 // Organizer: Export attendee list
 router.get(
-  "/organizer/export/:eventId",
+  "/organizer/export",
   auth("organizer","superAdmin"),
   bookingController.exportAttendees
 );

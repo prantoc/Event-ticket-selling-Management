@@ -109,7 +109,7 @@ router.get(
 // Admin: Get all bookings
 router.get(
   "/",
-  auth("admin", "superAdmin"),
+  auth("admin", "superAdmin","organizer"),
   bookingController.getAllBookings
 );
 

@@ -359,24 +359,49 @@ exports.getTicketByQRCode = async (ticketId) => {
 exports.getOrganizerDashboard = async (organizerId) => {
   const bookings = await Booking.find({ organizerId });
 
-  const totalSales = bookings.reduce(
-    (acc, b) => acc + (b.paymentDetails?.totalAmount || 0),
-    0
-  );
-  const totalPlatformFee = bookings.reduce(
-    (acc, b) => acc + (b.paymentDetails?.platformFee || 0),
-    0
-  );
-  const totalRevenue = totalSales - totalPlatformFee;
+  let totalSales = 0;
+  let totalPlatformFee = 0;
+  let totalTicketsSold = 0;
+  let totalRefunds = 0;
+  const ticketTypeSales = {};
+
+  bookings.forEach((booking) => {
+    const payment = booking.paymentDetails || {};
+    const refund = booking.refundDetails || {};
+    
+    totalSales += payment.totalAmount || 0;
+    totalPlatformFee += payment.platformFee || 0;
+
+    // Count tickets and categorize by type
+    booking.tickets?.forEach((ticket) => {
+      totalTicketsSold += ticket.quantity;
+
+      if (!ticketTypeSales[ticket.tierName]) {
+        ticketTypeSales[ticket.tierName] = 0;
+      }
+      ticketTypeSales[ticket.tierName] += ticket.quantity;
+    });
+
+    if (refund.status && refund.status !== "none") {
+      totalRefunds += 1;
+    }
+  });
+
   const totalBookings = bookings.length;
+  const grossRevenue = totalSales;
+  const netEarnings = totalSales - totalPlatformFee;
+  const refundRate = totalBookings ? (totalRefunds / totalBookings) * 100 : 0;
 
   return {
     totalBookings,
-    totalSales,
-    totalPlatformFee,
-    netEarnings: totalRevenue,
+    totalTicketsSold,
+    grossRevenue,
+    netEarnings,
+    refundRate: Number(refundRate.toFixed(2)), // e.g. 12.34%
+    ticketTypeSales, // e.g. { VIP: 10, Regular: 50 }
   };
 };
+
 
 exports.getEventBookingStats = async (eventId, organizerId) => {
   const bookings = await Booking.find({ eventId, organizerId });

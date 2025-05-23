@@ -5,6 +5,8 @@ const organizerRoutes = require("../modules/Organizer/organizer.routes");
 const eventRoutes = require("../modules/Event/event.routes");
 const categoryRoutes = require("../modules/Category/category.routes");
 const bookingRoutes = require("../modules/Booking/booking.route");
+const settingRoutes = require("../modules/Settings/settings.route");
+const faqRoutes = require("../modules/Faq/faq.route");
 const { path } = require("../../app");
 const moduleRoutes = [
   {
@@ -30,6 +32,14 @@ const moduleRoutes = [
   {
     path: "/bookings",
     route: bookingRoutes,
+  },
+  {
+    path: "/settings",
+    route: settingRoutes,
+  },
+  {
+    path: "/faq",
+    route: faqRoutes,
   },
 ];
 

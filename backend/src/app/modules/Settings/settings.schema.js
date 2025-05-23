@@ -1,32 +1,21 @@
-const mongoose = require('mongoose');
-const contentSchema = new mongoose.Schema({
-  type: {
-    type: String,
-    enum: ['faq', 'terms', 'privacy', 'about', 'help'],
-    required: true
-  },
-  title: {
-    type: String,
-    required: true
-  },
-  content: {
-    type: String,
-    required: true
-  },
-  order: {
-    type: Number,
-    default: 0
-  },
-  isPublished: {
-    type: Boolean,
-    default: true
-  },
-  lastUpdatedBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
-  }
-}, {
-  timestamps: true
-});
+// models/Setting.js
+const mongoose = require("mongoose");
 
-module.exports = mongoose.model('Content', contentSchema);
+const settingSchema = new mongoose.Schema({
+  globalCommissionRate: { type: Number, default: 0 },
+  organizerCommissionRates: [
+    {
+      organizerId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+      commissionRate: Number,
+    },
+  ],
+  companyName: String,
+  currencySymbol: String,
+  taxAlias: String,
+  taxPercentage: Number,
+  daysBeforeProductExpiry: Number,
+  address: String,
+  companyLogo: String,
+}, { timestamps: true });
+
+module.exports = mongoose.model("Setting", settingSchema);

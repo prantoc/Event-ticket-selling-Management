@@ -21,6 +21,7 @@ exports.getAllEvents = async (query) => {
   // Base public filters
   const baseFilter = {
     status: "approved",
+    eventDate: { $gte: new Date() },
   };
   const eventsQuery = new QueryBuilder(
     Event.find(baseFilter)

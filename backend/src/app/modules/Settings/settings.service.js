@@ -9,8 +9,10 @@ const Organizer = require("../Organizer/organizer.schema");
 
 exports.getSettings = async () => {
   const settings = await Setting.findOne();
+
   if (!settings) {
-    return res.status(404).json({ message: "Settings not found" });
+    // Just throw an error and handle it in the controller
+    throw new Error("Settings not found");
   }
 
   const data = settings.toObject();
@@ -19,6 +21,7 @@ exports.getSettings = async () => {
   if (data.companyLogo) {
     data.companyLogo = formatFileUrl(data.companyLogo);
   }
+
   return data;
 };
 

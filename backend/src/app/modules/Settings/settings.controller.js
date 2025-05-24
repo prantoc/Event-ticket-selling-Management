@@ -1,12 +1,22 @@
 // controllers/settingsController.js
 const settingsService = require("./settings.service");
 
-exports.getSettings = async (req, res) => {
+// exports.getSettings = async (req, res) => {
+//   try {
+//     const settings = await settingsService.getSettings();
+//     console.log("checking response: ");
+
+//     res.json({ success: true, data: settings });
+//   } catch (err) {
+//     res.status(500).json({ success: false, message: err.message });
+//   }
+// };
+exports.getAllSettings = async (req, res) => {
   try {
-    const settings = await settingsService.getSettings();
+    // const settings = await settingsService.getSettings();
     console.log("checking response: ");
-    
-    res.json({ success: true, data: settings });
+
+    res.json({ success: true, message: "working" });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }

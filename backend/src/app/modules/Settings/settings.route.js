@@ -8,7 +8,8 @@ const {
   setRelativePath,
 } = require("../../middleware/multerConfig");
 
-router.get("/", settingsController.getSettings);
+// router.get("/", settingsController.getSettings);
+router.get("/", settingsController.getAllSettings);
 router.patch(
   "/",
   auth("superAdmin", "admin"),

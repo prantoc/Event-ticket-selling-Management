@@ -4,6 +4,8 @@ const settingsService = require("./settings.service");
 exports.getSettings = async (req, res) => {
   try {
     const settings = await settingsService.getSettings();
+    console.log("checking response: ");
+    
     res.json({ success: true, data: settings });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
@@ -64,12 +66,10 @@ exports.getAdminDashboard = async (req, res) => {
     const stats = await settingsService.getAdminDashboardStats(filter);
     res.json({ success: true, data: stats });
   } catch (err) {
-    res
-      .status(500)
-      .json({
-        success: false,
-        error: "Failed to fetch dashboard stats",
-        message: err.message,
-      });
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch dashboard stats",
+      message: err.message,
+    });
   }
 };

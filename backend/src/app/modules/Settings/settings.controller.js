@@ -1,16 +1,6 @@
 // controllers/settingsController.js
 const settingsService = require("./settings.service");
 
-// exports.getSettings = async (req, res) => {
-//   try {
-//     const settings = await settingsService.getSettings();
-//     console.log("checking response: ");
-
-//     res.json({ success: true, data: settings });
-//   } catch (err) {
-//     res.status(500).json({ success: false, message: err.message });
-//   }
-// };
 exports.getAllSettings = async (req, res) => {
   try {
     const settings = await settingsService.getSettings();
@@ -26,7 +16,6 @@ exports.updateSettings = async (req, res) => {
     const data = { ...req.body };
 
     if (req.file) {
-      // Assuming you're uploading company logo via multer and storing relative path
       data.companyLogo = req.file.path;
     }
 

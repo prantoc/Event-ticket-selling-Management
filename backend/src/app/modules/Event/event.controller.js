@@ -1,17 +1,21 @@
 const QueryBuilder = require("../../builder/QueryBuilder");
 const { successResponse, errorResponse } = require("../../utils/response");
 const eventService = require("./event.service");
+const settingsService = require("../Settings/settings.service");
 
 exports.createEvent = async (req, res) => {
   try {
     if (!req.files || req.files.length === 0) {
       return errorResponse(res, "Event image is required", 400);
     }
+    const settings = await settingsService.getSettings();
+
     const eventImages = req.files.map((file) => file.path);
     const event = await eventService.createEvent({
       ...req.body,
       organizerId: req.user.userId,
       eventImages,
+      platformCommission: settings.globalCommissionRate,
     });
     return successResponse(res, "Event created successfully", event);
   } catch (err) {
@@ -125,6 +129,20 @@ exports.updateEvent = async (req, res) => {
     const event = await eventService.updateEvent(req.params.id, eventData);
     if (!event) return errorResponse(res, "Event not found", 404);
     return successResponse(res, "Event updated successfully", event);
+  } catch (err) {
+    return errorResponse(res, "Failed to update event", 500, err.message);
+  }
+};
+exports.updateCommisionRate = async (req, res) => {
+  try {
+    const {platformCommission}=req.body;
+    const isSpecialCommision=true;
+    const eventData ={
+      platformCommission,isSpecialCommision
+    }
+    const event = await eventService.updateEvent(req.params.id, eventData);
+    if (!event) return errorResponse(res, "Event not found", 404);
+    return successResponse(res, "Event commision updated successfully", event);
   } catch (err) {
     return errorResponse(res, "Failed to update event", 500, err.message);
   }

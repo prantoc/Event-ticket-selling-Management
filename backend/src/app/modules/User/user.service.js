@@ -78,6 +78,20 @@ const updateAccountStatus = async (id, status) => {
   return result;
 };
 
+const setUserPreferences = async (userId, preferences) => {
+  const updatedUser = await UserModel.findByIdAndUpdate(
+    userId,
+    { preferences: preferences },
+    { new: true }
+  ).select('name email preference');
+
+  if (!updatedUser) {
+    throw new Error('User not found');
+  }
+
+  return updatedUser;
+};
+
 const UserService = {
   users,
   createUser,
@@ -85,6 +99,7 @@ const UserService = {
   deleteUser,
   updateAccountStatus,
   getUserByID,
+  setUserPreferences,
 };
 
 module.exports = UserService;

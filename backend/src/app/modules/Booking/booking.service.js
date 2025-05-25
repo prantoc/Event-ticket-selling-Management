@@ -29,7 +29,12 @@ exports.createBooking = async (bookingData) => {
   });
 
   // Platform fee logic (e.g., 10%)
-  const platformFee = totalAmount * 0.1;
+  const platformFeeRate =
+    event.platformCommission != null
+      ? Number(event.platformCommission) / 100
+      : 0.05;
+
+  const platformFee = totalAmount * platformFeeRate;
   const organizerRevenue = totalAmount - platformFee;
   const ticketDetails = await Promise.all(
     enrichedTickets.flatMap((tier) =>
@@ -366,7 +371,7 @@ exports.getOrganizerDashboard = async (organizerId) => {
   let totalTicketsSold = 0;
   let totalRefunds = 0;
 
-  const ticketTypeSales = {};   // { [tierName]: quantity }
+  const ticketTypeSales = {}; // { [tierName]: quantity }
   const ticketTypeRevenue = {}; // { [tierName]: total revenue }
 
   bookings.forEach((booking) => {
@@ -424,8 +429,6 @@ exports.getOrganizerDashboard = async (organizerId) => {
     ticketTypeAverages,
   };
 };
-
-
 
 exports.getEventBookingStats = async (eventId, organizerId) => {
   const bookings = await Booking.find({ eventId, organizerId });
@@ -565,4 +568,3 @@ exports.getRefundRequests = async ({
     };
   });
 };
-

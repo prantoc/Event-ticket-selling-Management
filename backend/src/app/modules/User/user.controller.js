@@ -84,6 +84,34 @@ const updateAccountStatus = catchAsync(async (req, res) => {
     });
 })
 
+const updatePreferences = async (req, res) => {
+  try {
+    const  userId  = req.user.userId;
+    const { preference } = req.body;
+
+    if (!Array.isArray(preference)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Preference must be an array of strings',
+      });
+    }
+
+    const updatedUser = await UserService.setUserPreferences(userId, preference);
+
+    res.json({
+      success: true,
+      message: 'Preferences updated successfully',
+      data: updatedUser,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update preferences',
+      error: error.message,
+    });
+  }
+};
+
 const UserController = {
     users,
     createUser,
@@ -91,6 +119,7 @@ const UserController = {
     deleteUser,
     updateAccountStatus,
     updateUserByAdmin,
-    getUserByID
+    getUserByID,
+    updatePreferences
 }
 module.exports = UserController

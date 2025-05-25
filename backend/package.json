@@ -1,5 +1,5 @@
 {
-  "name": "expressjs-mongodb-mongoosejs-boilerplate",
+  "name": "lessortiesdediane-backend",
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
@@ -25,6 +25,7 @@
     "nodemailer": "^6.10.0",
     "pdfkit": "^0.17.1",
     "qrcode": "^1.5.4",
+    "stripe": "^18.1.1",
     "uuid": "^11.1.0",
     "zod": "^3.24.2"
   },

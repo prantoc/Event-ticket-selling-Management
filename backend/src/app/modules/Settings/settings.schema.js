@@ -2,7 +2,7 @@
 const mongoose = require("mongoose");
 
 const settingSchema = new mongoose.Schema({
-  globalCommissionRate: { type: Number, default: 0 },
+  globalCommissionRate: { type: Number, default: 5 },
   organizerCommissionRates: [
     {
       organizerId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },

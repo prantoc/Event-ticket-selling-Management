@@ -3,6 +3,7 @@ const Event = require("../Event/event.schema");
 const Booking = require("./booking.schema");
 const { v4: uuidv4 } = require("uuid");
 const QRCode = require("qrcode");
+const moment = require("moment");
 const path = require("path");
 const fs = require("fs");
 const { backend_url } = require("../../config");
@@ -368,7 +369,7 @@ exports.getOrganizerDashboard = async (organizerId) => {
   bookings.forEach((booking) => {
     const payment = booking.paymentDetails || {};
     const refund = booking.refundDetails || {};
-    
+
     totalSales += payment.totalAmount || 0;
     totalPlatformFee += payment.platformFee || 0;
 
@@ -401,7 +402,6 @@ exports.getOrganizerDashboard = async (organizerId) => {
     ticketTypeSales, // e.g. { VIP: 10, Regular: 50 }
   };
 };
-
 
 exports.getEventBookingStats = async (eventId, organizerId) => {
   const bookings = await Booking.find({ eventId, organizerId });
@@ -458,37 +458,81 @@ exports.getAttendees = async (organizerId, eventId) => {
   }));
 };
 
-// services/refundService.js
+exports.getRefundRequests = async ({
+  organizerId,
+  eventId,
+  userId,
+  userRole,
+}) => {
+  const isAdmin = userRole === "admin" || userRole === "superAdmin";
 
-exports.getRefundRequests = async ({ organizerId, eventId, userId }) => {
-  if (!organizerId) {
+  // Only require organizerId if not an admin
+  if (!isAdmin && !organizerId) {
     throw new Error("Organizer ID is required.");
   }
 
   const query = {
-    organizerId,
-    "refundDetails.status": { $ne: "none" }, // Only refund requests
+    "refundDetails.status": { $ne: "none" },
   };
+
+  // Apply filters based on role
+  if (!isAdmin) {
+    query.organizerId = organizerId;
+  }
 
   if (eventId) query.eventId = eventId;
   if (userId) query.userId = userId;
 
   const refunds = await Booking.find(query)
     .populate("userId", "name email phone")
-    .populate("eventId", "eventName")
+    .populate("eventId", "eventName refundPolicy eventDate")
     .sort({ "refundDetails.createdAt": -1 });
 
-  return refunds.map((booking) => ({
-    orderNumber: booking.orderNumber,
-    user: {
-      name: booking.userId?.name || "N/A",
-      email: booking.userId?.email || "N/A",
-      phone: booking.userId?.phone || "N/A",
-    },
-    event: {
-      name: booking.eventId?.eventName || "N/A",
-    },
-    reason: booking.refundDetails?.reason || "N/A",
-    requestedAt: booking.refundDetails?.createdAt || booking.createdAt,
-  }));
+  return refunds.map((booking) => {
+    const event = booking.eventId;
+    const totalAmount = booking.paymentDetails?.totalAmount || 0;
+
+    let refundPercentage = 0;
+    const requestDate = booking.refundDetails?.createdAt || booking.createdAt;
+
+    if (
+      event?.refundPolicy?.type === "time-based" &&
+      Array.isArray(event?.refundPolicy?.rules)
+    ) {
+      const daysBefore = moment(event.eventDate).diff(
+        moment(requestDate),
+        "days"
+      );
+
+      const matchedRule = event.refundPolicy.rules
+        .sort((a, b) => b.daysBeforeEvent - a.daysBeforeEvent)
+        .find((rule) => daysBefore >= rule.daysBeforeEvent);
+
+      refundPercentage = matchedRule?.refundPercentage || 0;
+    } else if (event?.refundPolicy?.type === "custom") {
+      refundPercentage = 0;
+    } else if (event?.refundPolicy?.type === "no-refunds") {
+      refundPercentage = 0;
+    }
+
+    const refundedAmount = (totalAmount * refundPercentage) / 100;
+
+    return {
+      bookingId: booking._id,
+      orderNumber: booking.orderNumber,
+      user: {
+        name: booking.userId?.name || "N/A",
+        email: booking.userId?.email || "N/A",
+        phone: booking.userId?.phone || "N/A",
+      },
+      event: {
+        name: event?.eventName || "N/A",
+      },
+      refundPercentage,
+      refundedAmount,
+      reason: booking.refundDetails?.reason || "N/A",
+      requestedAt: requestDate,
+    };
+  });
 };
+

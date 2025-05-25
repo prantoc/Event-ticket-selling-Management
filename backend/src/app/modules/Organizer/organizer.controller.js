@@ -1,12 +1,20 @@
 const UserService = require("../User/user.service");
 const organizerService = require("./organizer.service");
+const settingsService = require("../Settings/settings.service");
 
 // Create organizer profile
 exports.createProfile = async (req, res) => {
   try {
     const userId = req.user.userId;
     const logo = req.file ? req.file.path : null;
-    const data = { ...req.body, userId, logo };
+    const settings = await settingsService.getSettings();
+    const platformCommission = settings?.globalCommissionRate || 5;
+    const data = {
+      ...req.body,
+      userId,
+      logo,
+      commissionRate: platformCommission,
+    };
     const profile = await organizerService.createOrganizerProfile(data);
     if (!profile) {
       return res.status(400).json({

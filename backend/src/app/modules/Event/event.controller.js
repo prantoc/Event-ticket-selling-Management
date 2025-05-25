@@ -9,13 +9,14 @@ exports.createEvent = async (req, res) => {
       return errorResponse(res, "Event image is required", 400);
     }
     const settings = await settingsService.getSettings();
+    const platformCommission = settings?.globalCommissionRate || 5;
 
     const eventImages = req.files.map((file) => file.path);
     const event = await eventService.createEvent({
       ...req.body,
       organizerId: req.user.userId,
       eventImages,
-      platformCommission: settings.globalCommissionRate,
+      platformCommission: platformCommission,
     });
     return successResponse(res, "Event created successfully", event);
   } catch (err) {
@@ -135,11 +136,12 @@ exports.updateEvent = async (req, res) => {
 };
 exports.updateCommisionRate = async (req, res) => {
   try {
-    const {platformCommission}=req.body;
-    const isSpecialCommision=true;
-    const eventData ={
-      platformCommission,isSpecialCommision
-    }
+    const { platformCommission } = req.body;
+    const isSpecialCommision = true;
+    const eventData = {
+      platformCommission,
+      isSpecialCommision,
+    };
     const event = await eventService.updateEvent(req.params.id, eventData);
     if (!event) return errorResponse(res, "Event not found", 404);
     return successResponse(res, "Event commision updated successfully", event);

@@ -15,6 +15,11 @@ router.post(
   setRelativePath,
   eventController.createEvent
 );
+router.patch(
+  "/:id/commission",
+  auth("superAdmin", "admin", "organizer"),
+  eventController.updateCommisionRate
+);
 router.put(
   "/:id",
   auth("superAdmin", "admin", "organizer"),
@@ -31,19 +36,22 @@ router.delete(
 //Get event by organizer
 router.get(
   "/organizer",
-  auth("organizer",),
+  auth("organizer"),
   eventController.getEventByOrganizer
 );
 
 // Admin routes
 //approve event by admin
-router.get("/all", auth("admin", "superAdmin","organizer"), eventController.getAllEventsByAdmin);
+router.get(
+  "/all",
+  auth("admin", "superAdmin", "organizer"),
+  eventController.getAllEventsByAdmin
+);
 router.put(
   "/:id/status",
   auth("admin", "superAdmin"),
   eventController.updateStatus
 );
-
 
 // Public routes
 router.get("/", eventController.getAllEvents);

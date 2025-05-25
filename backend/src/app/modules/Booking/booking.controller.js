@@ -319,12 +319,18 @@ exports.exportAttendees = async (req, res) => {
   }
 };
 
-
 exports.getRefundRequests = async (req, res) => {
   try {
     const { eventId, userId } = req.query;
-     const organizerId = req.user.userId;
-    const refundList = await BookingService.getRefundRequests({ organizerId,eventId, userId });
+    const organizerId = req.user.userId;
+    const userRole = req.user.role;
+
+    const refundList = await BookingService.getRefundRequests({
+      organizerId,
+      eventId,
+      userId,
+      userRole,
+    });
 
     res.json({ success: true, data: refundList });
   } catch (err) {

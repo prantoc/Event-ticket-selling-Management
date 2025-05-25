@@ -364,7 +364,9 @@ exports.getOrganizerDashboard = async (organizerId) => {
   let totalPlatformFee = 0;
   let totalTicketsSold = 0;
   let totalRefunds = 0;
-  const ticketTypeSales = {};
+
+  const ticketTypeSales = {};   // { [tierName]: quantity }
+  const ticketTypeRevenue = {}; // { [tierName]: total revenue }
 
   bookings.forEach((booking) => {
     const payment = booking.paymentDetails || {};
@@ -373,20 +375,36 @@ exports.getOrganizerDashboard = async (organizerId) => {
     totalSales += payment.totalAmount || 0;
     totalPlatformFee += payment.platformFee || 0;
 
-    // Count tickets and categorize by type
     booking.tickets?.forEach((ticket) => {
-      totalTicketsSold += ticket.quantity;
+      const tier = ticket.tierName;
+      const quantity = ticket.quantity || 0;
+      const price = ticket.price || 0;
+      const total = quantity * price;
 
-      if (!ticketTypeSales[ticket.tierName]) {
-        ticketTypeSales[ticket.tierName] = 0;
-      }
-      ticketTypeSales[ticket.tierName] += ticket.quantity;
+      totalTicketsSold += quantity;
+
+      if (!ticketTypeSales[tier]) ticketTypeSales[tier] = 0;
+      ticketTypeSales[tier] += quantity;
+
+      if (!ticketTypeRevenue[tier]) ticketTypeRevenue[tier] = 0;
+      ticketTypeRevenue[tier] += total;
     });
 
     if (refund.status && refund.status !== "none") {
       totalRefunds += 1;
     }
   });
+
+  const ticketTypeAverages = {};
+  for (const tier in ticketTypeSales) {
+    const quantity = ticketTypeSales[tier];
+    const revenue = ticketTypeRevenue[tier] || 0;
+    ticketTypeAverages[tier] = quantity ? +(revenue / quantity).toFixed(2) : 0;
+  }
+
+  const totalAverageTicketPrice = totalTicketsSold
+    ? +(totalSales / totalTicketsSold).toFixed(2)
+    : 0;
 
   const totalBookings = bookings.length;
   const grossRevenue = totalSales;
@@ -398,10 +416,15 @@ exports.getOrganizerDashboard = async (organizerId) => {
     totalTicketsSold,
     grossRevenue,
     netEarnings,
-    refundRate: Number(refundRate.toFixed(2)), // e.g. 12.34%
-    ticketTypeSales, // e.g. { VIP: 10, Regular: 50 }
+    refundRate: Number(refundRate.toFixed(2)),
+    totalAverageTicketPrice,
+    ticketTypeSales,
+    ticketTypeRevenue,
+    ticketTypeAverages,
   };
 };
+
+
 
 exports.getEventBookingStats = async (eventId, organizerId) => {
   const bookings = await Booking.find({ eventId, organizerId });

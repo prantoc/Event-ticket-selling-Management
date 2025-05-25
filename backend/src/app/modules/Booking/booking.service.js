@@ -9,6 +9,7 @@ const fs = require("fs");
 const { backend_url } = require("../../config");
 const generateTicketPDF = require("../../utils/generateTicketPDF");
 const formatFileUrl = require("../../utils/formatFileUrl");
+const { default: status } = require("http-status");
 exports.createBooking = async (bookingData) => {
   const { userId, eventId, tickets, paymentMethod } = bookingData;
   const event = await Event.findById(eventId).populate("organizerId");
@@ -543,6 +544,12 @@ exports.getRefundRequests = async ({
     return {
       bookingId: booking._id,
       orderNumber: booking.orderNumber,
+      status: booking.refundDetails?.status || "none",
+      paymentDetails: {
+        method: booking.paymentDetails?.method || "N/A",
+        status: booking.paymentDetails?.status || "N/A",
+        totalAmount,
+      },
       user: {
         name: booking.userId?.name || "N/A",
         email: booking.userId?.email || "N/A",

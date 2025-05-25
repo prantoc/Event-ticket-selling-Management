@@ -8,6 +8,7 @@ const notFound = require('./app/middleware/notFound');
 const globalErrorHandler = require('./app/middleware/globalError');
 // app.use(cors());
 app.use(cors({ origin: '*' }));
+app.use("/api/v1/webhooks", require("./app/modules/Payments/payment.webhook.routes"));
 app.use(express.json());
 app.use('/api/v1', routes);
 app.use("/api/v1/local", express.static(path.join(__dirname, "app/local")));

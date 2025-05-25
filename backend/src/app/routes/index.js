@@ -7,6 +7,7 @@ const categoryRoutes = require("../modules/Category/category.routes");
 const bookingRoutes = require("../modules/Booking/booking.route");
 const settingRoutes = require("../modules/Settings/settings.route");
 const faqRoutes = require("../modules/Faq/faq.route");
+const paymentRoutes = require("../modules/Payments/payment.routes");
 const { path } = require("../../app");
 const moduleRoutes = [
   {
@@ -40,6 +41,10 @@ const moduleRoutes = [
   {
     path: "/faq",
     route: faqRoutes,
+  },
+  {
+    path: "/payments",
+    route: paymentRoutes,
   },
 ];
 

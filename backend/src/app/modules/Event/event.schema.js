@@ -146,23 +146,14 @@ const eventSchema = new mongoose.Schema(
         default: 0,
       },
     },
-    revenue: {
-      gross: {
-        type: Number,
-        default: 0,
-      },
-      platformCommission: {
-        type: Number,
-        default: 0,
-      },
-      net: {
-        type: Number,
-        default: 0,
-      },
-      refunded: {
-        type: Number,
-        default: 0,
-      },
+
+    platformCommission: {
+      type: Number,
+      default: 0,
+    },
+    isSpecialCommision: {
+      type: Boolean,
+      default: false,
     },
   },
   {

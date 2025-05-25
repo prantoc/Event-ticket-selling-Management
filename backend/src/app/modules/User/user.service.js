@@ -83,7 +83,7 @@ const setUserPreferences = async (userId, preferences) => {
     userId,
     { preferences: preferences },
     { new: true }
-  ).select('name email preference');
+  ).select('name email preferences');
 
   if (!updatedUser) {
     throw new Error('User not found');

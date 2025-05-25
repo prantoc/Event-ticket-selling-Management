@@ -30,7 +30,7 @@ const register = catchAsync(async (req, res) => {
     sendResponse(res, {
         success: true,
         message: 'Registration successful. Please check your email to verify your account.',
-        data: null,
+        data: user,
         statusCode: httpStatus.CREATED
     });
 })

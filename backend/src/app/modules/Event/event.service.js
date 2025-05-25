@@ -18,11 +18,19 @@ exports.getAllEvents = async (query) => {
     "today",
   ];
 
+  // Sanitize empty string filters
+  for (const key in query) {
+    if (query[key] === "") {
+      delete query[key];
+    }
+  }
+
   // Base public filters
   const baseFilter = {
     status: "approved",
     eventDate: { $gte: new Date() },
   };
+
   const eventsQuery = new QueryBuilder(
     Event.find(baseFilter)
       .populate({
@@ -59,6 +67,12 @@ exports.getAllEvents = async (query) => {
 };
 
 exports.getAllEventsByAdmin = async (query) => {
+  // Sanitize empty string filters
+  for (const key in query) {
+    if (query[key] === "") {
+      delete query[key];
+    }
+  }
   const eventsQuery = new QueryBuilder(
     Event.find()
       .populate({

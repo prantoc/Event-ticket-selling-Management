@@ -72,6 +72,11 @@ exports.getAllEventsByAdmin = async (query) => {
     if (query[key] === "") {
       delete query[key];
     }
+    // Convert "true"/"false" strings to actual booleans
+    if (key === "isSpecialCommision") {
+      if (query[key] === "true") query[key] = true;
+      else if (query[key] === "false") query[key] = false;
+    }
   }
   const eventsQuery = new QueryBuilder(
     Event.find()
@@ -83,7 +88,7 @@ exports.getAllEventsByAdmin = async (query) => {
     query
   )
     .search(["eventName", "description", "tags"])
-    .filter(["eventCategory", "eventDate", "status"])
+    .filter(["eventCategory", "eventDate", "status", "isSpecialCommision"])
     .sort()
     .paginate()
     .fields();

@@ -21,11 +21,7 @@ router.patch(
   auth("user", "organizer", "admin", "superAdmin"),
   UserController.updateUser
 );
-router.patch(
-  "/me/preferences",
-  auth("user", "organizer", "admin", "superAdmin"),
-  UserController.updatePreferences
-);
+router.patch("/me/preferences", UserController.updatePreferences);
 router.patch("/:id", auth("superAdmin"), UserController.updateUserByAdmin);
 
 router.patch(

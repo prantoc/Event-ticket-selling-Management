@@ -6,13 +6,13 @@ const routes = require("./app/routes");
 const notFound = require("./app/middleware/notFound");
 // const globalErrorHandler = require('./app/middleware/globalErrorHandler');
 const globalErrorHandler = require("./app/middleware/globalError");
+const webhookRoutes = require("./app/modules/Payments/payment.webhook.routes");
 // app.use(cors());
 app.use(cors({ origin: "*" }));
 app.post(
   "/api/v1/webhooks/stripe-webhook",
   express.raw({ type: "application/json" }),
-  require("./app/modules/Payments/payment.webhook.controller")
-    .handleStripeWebhook
+  webhookRoutes
 );
 app.use(express.json());
 app.use("/api/v1", routes);

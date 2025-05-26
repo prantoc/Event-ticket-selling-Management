@@ -59,6 +59,14 @@ const organizerProfileSchema = new mongoose.Schema({
     default: 'weekly'
   },
   earnings: {
+    grossTotal: {
+      type: Number,
+      default: 0
+    },
+    totalPlatformFee: {
+      type: Number,
+      default: 0
+    },
     total: {
       type: Number,
       default: 0
@@ -68,6 +76,10 @@ const organizerProfileSchema = new mongoose.Schema({
       default: 0
     },
     pending: {
+      type: Number,
+      default: 0
+    },
+    totalWithdraw: {
       type: Number,
       default: 0
     }

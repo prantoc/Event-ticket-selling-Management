@@ -24,6 +24,12 @@ router.put(
   organizerController.updateProfile
 );
 
+router.get(
+  "/me/earnings",
+  auth("organizer"),
+  organizerController.getOrgnizersEarnings
+);
+
 // Admin routes
 router.get(
   "/",

@@ -1,13 +1,14 @@
 const paymentService = require("./payment.service");
 const bookingService = require("../Booking/booking.service");
 const stripe = require("./stripeClient");
-const dotenv = require('dotenv');
-const path = require('path');
-dotenv.config({ path: path.join(process.cwd(), '.env') });
+const dotenv = require("dotenv");
+const path = require("path");
+dotenv.config({ path: path.join(process.cwd(), ".env") });
 
 exports.createCheckoutSession = async (req, res) => {
   try {
-    const { amount, currency, userId, bookingId, eventId } = req.body;
+    const { amount, currency, userId, bookingId, eventId, eventName } =
+      req.body;
 
     const sessionUrl = await paymentService.createStripeCheckoutSession({
       amount,
@@ -15,6 +16,7 @@ exports.createCheckoutSession = async (req, res) => {
       userId,
       bookingId,
       eventId,
+      eventName,
     });
 
     res.status(200).json({
@@ -33,8 +35,7 @@ exports.createCheckoutSession = async (req, res) => {
 exports.handleStripeWebhook = async (req, res) => {
   const sig = req.headers["stripe-signature"];
   let event;
-  
-  
+
   try {
     event = stripe.webhooks.constructEvent(
       req.body,
@@ -44,12 +45,11 @@ exports.handleStripeWebhook = async (req, res) => {
   } catch (err) {
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
-  console.log("Received Stripe webhook event:", event);
+  
 
   // Handle successful payment
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
-    console.log("Checkout session completed:", session);
     // Optional: retrieve line items, metadata, etc.
     const paymentIntentId = session.payment_intent;
     const userId = session.metadata?.userId || null;
@@ -57,16 +57,17 @@ exports.handleStripeWebhook = async (req, res) => {
     const eventId = session.metadata?.eventId || null;
 
     const payload = {
-      paymentDetails: {
-        method: "stripe",
-        stripePaymentIntentId: paymentIntentId,
-        status: "succeeded",
+      $set: {
+        "paymentDetails.method": "stripe",
+        "paymentDetails.stripePaymentIntentId": paymentIntentId,
+        "paymentDetails.status": "succeeded",
       },
     };
 
     try {
       const result = await bookingService.updateBooking(bookingId, payload);
-      console.log("Booking updated successfully:", result);
+      console.log("Payment saved successfully:");
+      
     } catch (err) {
       console.error("Error saving payment:", err);
     }

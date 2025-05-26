@@ -184,9 +184,8 @@ exports.getBookingsByUserId = async (userId, query) => {
     }
 
     // Hide ticketDetails if payment is not successful
-    if (booking.paymentDetails?.status !== "succeeded") {
-      // delete booking._doc.ticketDetails; // Ensure removal from the response object
-      booking.ticketDetails = []; 
+    if (booking.paymentDetails?.status !== "success") {
+      booking.ticketDetails = [];
     }
 
     return booking;

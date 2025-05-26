@@ -46,7 +46,7 @@ const bookingSchema = new mongoose.Schema(
         enum: [
           "pending",
           "processing",
-          "succeeded",
+          "success",
           "failed",
           "refunded",
           "partially_refunded",

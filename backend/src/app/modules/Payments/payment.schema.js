@@ -8,7 +8,7 @@ const paymentSchema = new mongoose.Schema(
     amount: Number,
     currency: String,
     paymentIntentId: String,
-    status: { type: String, enum: ["succeeded", "failed", "pending"] },
+    status: { type: String, enum: ["success", "failed", "pending"] },
   },
   { timestamps: true }
 );

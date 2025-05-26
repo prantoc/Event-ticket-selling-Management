@@ -60,7 +60,7 @@ exports.handleStripeWebhook = async (req, res) => {
       $set: {
         "paymentDetails.method": "stripe",
         "paymentDetails.stripePaymentIntentId": paymentIntentId,
-        "paymentDetails.status": "succeeded",
+        "paymentDetails.status": "success",
       },
     };
 

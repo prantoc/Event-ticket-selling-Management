@@ -9,8 +9,8 @@ const globalErrorHandler = require("./app/middleware/globalError");
 const webhookRoutes = require("./app/modules/Payments/payment.webhook.routes");
 // app.use(cors());
 app.use(cors({ origin: "*" }));
-app.post(
-  "/api/v1/webhooks/stripe-webhook",
+app.use(
+  "/api/v1/webhooks",
   express.raw({ type: "application/json" }),
   webhookRoutes
 );

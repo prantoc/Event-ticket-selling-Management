@@ -1,13 +1,14 @@
 const stripe = require("./stripeClient");
-const dotenv = require('dotenv');
-const path = require('path');
-dotenv.config({ path: path.join(process.cwd(), '.env') });
+const dotenv = require("dotenv");
+const path = require("path");
+dotenv.config({ path: path.join(process.cwd(), ".env") });
 exports.createStripeCheckoutSession = async ({
   amount,
   currency = "usd",
   userId,
   bookingId,
   eventId,
+  eventName,
 }) => {
   const successUrl = `${process.env.CLIENT_URL}/payment-success`;
   const cancelUrl = `${process.env.CLIENT_URL}/payment-failed`;
@@ -18,9 +19,12 @@ exports.createStripeCheckoutSession = async ({
         price_data: {
           currency,
           product_data: {
-            name: "Event Ticket",
+            name: eventName || "Event Ticket",
+            description: `Booking ID: ${bookingId || "N/A"}, Event ID: ${
+              eventId || "N/A"
+            }`,
           },
-          unit_amount: amount * 100, // Stripe expects cents
+          unit_amount: amount * 100,
         },
         quantity: 1,
       },

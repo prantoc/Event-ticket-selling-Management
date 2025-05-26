@@ -36,6 +36,7 @@ exports.createStripeCheckoutSession = async ({
       userId,
       bookingId,
       eventId,
+      amount,
     },
   });
 

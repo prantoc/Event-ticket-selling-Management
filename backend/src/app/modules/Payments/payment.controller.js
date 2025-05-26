@@ -1,15 +1,10 @@
 const paymentService = require("./payment.service");
+const bookingService = require("../Booking/booking.service");
 const stripe = require("./stripeClient");
 
 exports.createCheckoutSession = async (req, res) => {
   try {
-    const {
-      amount,
-      currency,
-      userId,
-      bookingId,
-      eventId,
-    } = req.body;
+    const { amount, currency, userId, bookingId, eventId } = req.body;
 
     const sessionUrl = await paymentService.createStripeCheckoutSession({
       amount,
@@ -35,7 +30,8 @@ exports.createCheckoutSession = async (req, res) => {
 exports.handleStripeWebhook = async (req, res) => {
   const sig = req.headers["stripe-signature"];
   let event;
-
+  console.log("Received Stripe webhook event:", req.body);
+  
   try {
     event = stripe.webhooks.constructEvent(
       req.rawBody,
@@ -49,23 +45,24 @@ exports.handleStripeWebhook = async (req, res) => {
   // Handle successful payment
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
-
+    console.log("Checkout session completed:", session);
     // Optional: retrieve line items, metadata, etc.
     const paymentIntentId = session.payment_intent;
     const userId = session.metadata?.userId || null;
     const bookingId = session.metadata?.bookingId || null;
     const eventId = session.metadata?.eventId || null;
 
-    try {
-      await Payment.create({
-        userId,
-        bookingId,
-        eventId,
-        paymentIntentId,
-        amount: session.amount_total / 100,
-        currency: session.currency,
+    const payload = {
+      paymentDetails: {
+        method: "stripe",
+        stripePaymentIntentId: paymentIntentId,
         status: "succeeded",
-      });
+      },
+    };
+
+    try {
+      const result = await bookingService.updateBooking(bookingId, payload);
+      console.log("Booking updated successfully:", result);
     } catch (err) {
       console.error("Error saving payment:", err);
     }

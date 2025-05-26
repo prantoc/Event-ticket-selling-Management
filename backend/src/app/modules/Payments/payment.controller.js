@@ -34,14 +34,10 @@ exports.handleStripeWebhook = async (req, res) => {
   const sig = req.headers["stripe-signature"];
   let event;
   
-  console.log("Received Stripe webhook with signature:", sig);
-  //stripe web hook secret
-  console.log("Stripe webhook secret:", process.env.STRIPE_WEBHOOK_SECRET);
-  
   
   try {
     event = stripe.webhooks.constructEvent(
-      req.rawBody,
+      req.body,
       sig,
       process.env.STRIPE_WEBHOOK_SECRET
     );

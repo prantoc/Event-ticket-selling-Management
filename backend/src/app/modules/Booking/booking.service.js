@@ -176,11 +176,18 @@ exports.getBookingsByUserId = async (userId, query) => {
 
   // Format image URLs
   const formattedBookings = bookings.map((booking) => {
-    if (Array.isArray(booking.eventId.eventImages)) {
+    // Format event images
+    if (Array.isArray(booking.eventId?.eventImages)) {
       booking.eventId.eventImages = booking.eventId.eventImages.map((img) =>
         formatFileUrl(img)
       );
     }
+
+    // Hide ticketDetails if payment is not successful
+    if (booking.paymentDetails?.status !== "succeeded") {
+      delete booking._doc.ticketDetails; // Ensure removal from the response object
+    }
+
     return booking;
   });
 

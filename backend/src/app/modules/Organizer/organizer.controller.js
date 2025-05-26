@@ -205,3 +205,29 @@ exports.deleteOrganizer = async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 };
+
+
+exports.getOrgnizersEarnings = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const earnings = await organizerService.getOrgnizersEarnings(userId);
+    if (!earnings) {
+      return res.status(404).json({
+        success: false,
+        message: "Organizer not found",
+        error: "",
+      });
+    }
+    res.status(200).json({
+      success: true,
+      message: "Organizer earnings fetched successfully",
+      data: earnings,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+      error: err.message,
+    });
+  }
+} 

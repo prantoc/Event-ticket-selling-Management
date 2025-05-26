@@ -33,7 +33,7 @@ exports.createCheckoutSession = async (req, res) => {
 exports.handleStripeWebhook = async (req, res) => {
   const sig = req.headers["stripe-signature"];
   let event;
-  console.log("Received Stripe webhook event:", req.body);
+  
   
   try {
     event = stripe.webhooks.constructEvent(
@@ -44,6 +44,7 @@ exports.handleStripeWebhook = async (req, res) => {
   } catch (err) {
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
+  console.log("Received Stripe webhook event:", event);
 
   // Handle successful payment
   if (event.type === "checkout.session.completed") {

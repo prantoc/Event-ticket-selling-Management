@@ -2,6 +2,7 @@ const QueryBuilder = require("../../builder/QueryBuilder");
 const { backend_url } = require("../../config");
 const formatFileUrl = require("../../utils/formatFileUrl");
 const Organizer = require("./organizer.schema");
+const Event = require("../Event/event.schema");
 
 exports.createOrganizerProfile = async (data) => {
   return await Organizer.create(data);
@@ -93,4 +94,55 @@ exports.rejectOrganizer = async (userId, reason, adminId) => {
 exports.deleteOrganizerByUserId = async (userId) => {
   const deleted = await Organizer.findOneAndDelete({ userId });
   return deleted;
+};
+
+exports.updateOrganizerEarnings = async ({ eventId, amount = 0 }) => {
+  if (!eventId) throw new Error("Event ID is required");
+
+  // Find event and organizer
+  const event = await Event.findById(eventId);
+  if (!event || !event.organizerId)
+    throw new Error("Event or Organizer not found");
+
+  const organizer = await Organizer.findById(event.organizerId);
+  if (!organizer) throw new Error("Organizer not found");
+
+  const grossTotal = amount;
+  const totalPlatformFee = (amount * (event.platformCommission || 5)) / 100;
+  const netEarnings = grossTotal - totalPlatformFee;
+
+  // Initialize earnings if missing
+  if (!organizer.earnings) {
+    organizer.earnings = {};
+  }
+
+  organizer.earnings.grossTotal =
+    (organizer.earnings.grossTotal || 0) + grossTotal;
+  organizer.earnings.totalPlatformFee =
+    (organizer.earnings.totalPlatformFee || 0) + totalPlatformFee;
+  organizer.earnings.total = (organizer.earnings.total || 0) + netEarnings;
+  organizer.earnings.available =
+    (organizer.earnings.available || 0) + netEarnings;
+
+  await organizer.save();
+  return organizer.earnings;
+};
+
+exports.getOrgnizersEarnings = async (userId) => {
+  const organizer = await Organizer.findOne({ userId }).lean();
+  if (!organizer) return null;
+
+  const earnings = {
+    organizationName: organizer.organizationName,
+    grossTotal: organizer.earnings.grossTotal || 0,
+    totalPlatformFee: organizer.earnings.totalPlatformFee || 0,
+    totalNetEarning: organizer.earnings.total,
+    availableBalance: organizer.earnings.available,
+    pending: organizer.earnings.pending,
+    totalWithdraw: organizer.earnings.totalWithdraw || 0,
+  };
+
+  return {
+    earnings,
+  };
 };

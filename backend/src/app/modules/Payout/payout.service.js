@@ -1,5 +1,5 @@
-const Payout = require('./payout.schema');
-const Organizer = require('../Organizer/organizer.schema');
+const Payout = require("./payout.schema");
+const Organizer = require("../Organizer/organizer.schema");
 exports.createPayout = async (data) => {
   const payout = new Payout(data);
   return await payout.save();
@@ -18,11 +18,13 @@ exports.updatePayout = async (id, data) => {
   const updatedPayout = await Payout.findByIdAndUpdate(id, data, { new: true });
 
   // If payout is marked as completed, update organizer earnings
-  if (updatedPayout.status === 'completed') {
-    const organizer = await Organizer.findById(updatedPayout.organizerId);
+  if (updatedPayout.status === "completed") {
+    const organizer = await Organizer.findOne({
+      userId: updatedPayout.organizerId,
+    });
 
     if (!organizer) {
-      throw new Error('Organizer not found');
+      throw new Error("Organizer not found");
     }
 
     // Ensure earnings object exists
@@ -35,18 +37,16 @@ exports.updatePayout = async (id, data) => {
     organizer.earnings.totalWithdraw = organizer.earnings.totalWithdraw || 0;
 
     // Update earnings
-    // organizer.earnings.available -= updatedPayout.amount;
-    organizer.earnings.available =5000;
+    organizer.earnings.available -= updatedPayout.amount;
     organizer.earnings.totalWithdraw += updatedPayout.amount;
 
     // // Prevent negative available balance
-    // if (organizer.earnings.available < 0) {
-    //   organizer.earnings.available = 0;
-    // }
+    if (organizer.earnings.available < 0) {
+      organizer.earnings.available = 0;
+    }
 
     await organizer.save();
   }
 
   return updatedPayout;
 };
-

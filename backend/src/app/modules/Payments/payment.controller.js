@@ -67,6 +67,8 @@ exports.handleStripeWebhook = async (req, res) => {
     };
 
     try {
+      console.log("Saving payment for booking ID and payload:", bookingId,payload);
+      
       const result = await bookingService.updateBooking(bookingId, payload);
       console.log("Payment saved successfully:");
       const organizerUpdate = organizerService.updateOrganizerEarnings(

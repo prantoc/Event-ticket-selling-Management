@@ -97,6 +97,8 @@ exports.deleteOrganizerByUserId = async (userId) => {
 };
 
 exports.updateOrganizerEarnings = async ({ eventId, amount = 0 }) => {
+  console.log("Updating organizer earnings for event:", eventId, "with amount:", amount);
+  
   if (!eventId) throw new Error("Event ID is required");
 
   // Find event and organizer

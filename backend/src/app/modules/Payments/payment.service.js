@@ -10,6 +10,8 @@ exports.createStripeCheckoutSession = async ({
   eventId,
   eventName,
 }) => {
+  console.log("Event id found in payment service:", eventId);
+  
   const successUrl = `${process.env.CLIENT_URL}/payment-success`;
   const cancelUrl = `${process.env.CLIENT_URL}/payment-failed`;
   const session = await stripe.checkout.sessions.create({

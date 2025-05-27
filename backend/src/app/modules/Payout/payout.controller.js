@@ -4,10 +4,13 @@ exports.createPayout = async (req, res) => {
   try {
     const organizerId = req.user.userId;
 
-    const result = await payoutService.createPayout({
-      ...req.body,
-      organizerId,
-    });
+    const result = await payoutService.createPayout(
+      {
+        ...req.body,
+        organizerId,
+      },
+      organizerId
+    );
 
     res
       .status(201)

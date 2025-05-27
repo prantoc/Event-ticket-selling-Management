@@ -28,18 +28,6 @@ const payoutSchema = new mongoose.Schema({
     enum: ['automatic', 'manual'],
     default: 'automatic'
   },
-  period: {
-    startDate: Date,
-    endDate: Date
-  },
-  bookings: [{
-    bookingId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Booking'
-    },
-    amount: Number,
-    commission: Number
-  }],
   failureReason: String,
   completedAt: Date
 }, {

@@ -107,13 +107,23 @@ exports.getAdminDashboardStats = async (filter = "all") => {
   });
 
   // Revenue
-  const bookings = await Booking.find(dateFilter);
+  const bookings = await Booking.find({
+    ...dateFilter,
+    "paymentDetails.status": "success",
+  });
+
   const totalRevenue = bookings.reduce(
     (sum, b) => sum + (b.paymentDetails?.totalAmount || 0),
     0
   );
+
   const totalPlatformCommission = await Booking.aggregate([
-    { $match: { ...dateFilter } },
+    {
+      $match: {
+        ...dateFilter,
+        "paymentDetails.status": "success",
+      },
+    },
     {
       $group: {
         _id: null,

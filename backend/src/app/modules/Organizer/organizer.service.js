@@ -104,7 +104,9 @@ exports.updateOrganizerEarnings = async ({ eventId, amount = 0 }) => {
   if (!event || !event.organizerId)
     throw new Error("Event or Organizer not found");
 
-  const organizer = await Organizer.findById(event.organizerId);
+  const organizer = await Organizer.findOne({
+    userId: event.organizerId,
+  });
   if (!organizer) throw new Error("Organizer not found");
 
   const grossTotal = amount;

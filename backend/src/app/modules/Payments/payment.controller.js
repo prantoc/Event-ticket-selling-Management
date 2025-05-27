@@ -73,7 +73,7 @@ exports.handleStripeWebhook = async (req, res) => {
         eventId,
         amount
       );
-      console.log("Organizer earnings updated successfully:");
+      console.log("Organizer earnings updated successfully:",organizerUpdate);
       
       
     } catch (err) {

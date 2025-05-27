@@ -371,7 +371,10 @@ exports.getTicketByQRCode = async (ticketId) => {
 };
 
 exports.getOrganizerDashboard = async (organizerId) => {
-  const bookings = await Booking.find({ organizerId });
+  const bookings = await Booking.find({
+    organizerId,
+    "paymentDetails.status": "success",
+  });
 
   let totalSales = 0;
   let totalPlatformFee = 0;

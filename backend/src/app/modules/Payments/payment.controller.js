@@ -46,7 +46,6 @@ exports.handleStripeWebhook = async (req, res) => {
   } catch (err) {
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
-  
 
   // Handle successful payment
   if (event.type === "checkout.session.completed") {
@@ -67,18 +66,12 @@ exports.handleStripeWebhook = async (req, res) => {
     };
 
     try {
-     
-      
       const result = await bookingService.updateBooking(bookingId, payload);
-      console.log("Payment saved successfully:");
-       console.log("Saving payment for booking ID and payload:", eventId,amount);
       const organizerUpdate = organizerService.updateOrganizerEarnings(
         eventId,
         amount
       );
-      console.log("Organizer earnings updated successfully:",organizerUpdate);
-      
-      
+      console.log("Payment saved successfully:");
     } catch (err) {
       console.error("Error saving payment:", err);
     }

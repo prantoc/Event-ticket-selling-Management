@@ -2,7 +2,13 @@ const payoutService = require("./payout.service");
 
 exports.createPayout = async (req, res) => {
   try {
-    const result = await payoutService.createPayout(req.body);
+    const organizerId = req.user.userId;
+
+    const result = await payoutService.createPayout({
+      ...req.body,
+      organizerId,
+    });
+
     res
       .status(201)
       .json({ success: true, message: "Payout request created", data: result });

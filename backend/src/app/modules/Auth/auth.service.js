@@ -19,27 +19,41 @@ const loginUser = async (payload) => {
   if (!user) {
     throw new AppError(httpStatus.BAD_REQUEST, "User does not exist");
   }
+
   if (!user.isVerified) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
       "Please verify your email before logging in"
     );
   }
+
+  const isPreviouslyLoggedIn = user.previouslyLoggedIn;
   const isMatch = await compareValidPass(payload.password, user.password);
+
   if (!isMatch) {
     throw new AppError(httpStatus.BAD_REQUEST, "Password does not match");
   }
+
+  // ✅ Update previouslyLoggedIn to true if not already
+  if (!isPreviouslyLoggedIn) {
+    await UserModel.updateOne({ _id: user._id }, { previouslyLoggedIn: true });
+  }
+
   const token = createToken({
     email: user.email,
     userId: user._id,
     role: user.role,
   });
+
   const { password, ...res } = user;
+
   return {
     ...res,
+    isPreviouslyLoggedIn, // ✅ include in response
     accessToken: token,
   };
 };
+
 
 module.exports = {
   registerUser,

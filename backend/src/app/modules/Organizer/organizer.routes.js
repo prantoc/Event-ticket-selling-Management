@@ -16,6 +16,7 @@ router.post(
   organizerController.createProfile
 );
 router.get("/me", auth("organizer"), organizerController.getProfile);
+router.get("/check-status", auth("user","organizer"), organizerController.checkOrganizerStatus);
 router.put(
   "/me",
   auth("organizer"),

@@ -119,7 +119,8 @@ exports.updateOrganizerEarnings = async (eventId, amount = 0) => {
   }
 
   organizer.earnings.grossTotal =
-    (organizer.earnings.grossTotal || 0) + grossTotal;
+    Number(organizer.earnings.grossTotal || 0) + Number(grossTotal);
+
   organizer.earnings.totalPlatformFee =
     (organizer.earnings.totalPlatformFee || 0) + totalPlatformFee;
   organizer.earnings.total = (organizer.earnings.total || 0) + netEarnings;

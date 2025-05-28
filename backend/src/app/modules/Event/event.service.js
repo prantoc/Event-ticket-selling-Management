@@ -160,13 +160,10 @@ exports.updateEvent = async (id, updateData) => {
   return await Event.findByIdAndUpdate(id, updateData, { new: true });
 };
 
-exports.updateEventEarnings = async (eventId, tickets) => {
-  
-  const session = await mongoose.startSession();
-  session.startTransaction();
 
+exports.updateEventEarnings = async (eventId, tickets) => {
   try {
-    const event = await Event.findById(eventId).session(session);
+    const event = await Event.findById(eventId);
     if (!event) throw new Error("Event not found");
 
     let totalTicketsSold = 0;
@@ -175,7 +172,7 @@ exports.updateEventEarnings = async (eventId, tickets) => {
     for (const ticket of tickets) {
       const { ticketTierId, quantity, totalPrice } = ticket;
 
-      const tier = event.ticketTiers._id(ticketTierId);
+      const tier = event.ticketTiers.id(ticketTierId); // Corrected from ._id() to .id()
       if (!tier) throw new Error(`Ticket tier not found: ${ticketTierId}`);
 
       tier.sold += quantity;
@@ -185,22 +182,27 @@ exports.updateEventEarnings = async (eventId, tickets) => {
       totalRevenue += totalPrice;
     }
 
+    // Ensure analytics field is initialized
+    if (!event.analytics) {
+      event.analytics = {
+        totalTciketsSold: 0,
+        totalSale: 0,
+      };
+    }
+
     event.analytics.totalTciketsSold += totalTicketsSold;
     event.analytics.totalSale += totalRevenue;
 
-    await event.save({ session });
-    await session.commitTransaction();
+    await event.save();
 
     console.log("Event earnings updated successfully.");
     return event;
   } catch (err) {
-    await session.abortTransaction();
     console.error("Failed to update event earnings:", err);
     throw err;
-  } finally {
-    session.endSession();
   }
 };
+
 
 
 exports.deleteEvent = async (id) => {

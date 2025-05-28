@@ -1,7 +1,7 @@
 const QueryBuilder = require("../../builder/QueryBuilder");
 const formatFileUrl = require("../../utils/formatFileUrl");
 const Event = require("./event.schema");
-
+const mongoose = require("mongoose");
 exports.createEvent = async (eventData) => {
   return await Event.create(eventData);
 };
@@ -159,13 +159,49 @@ exports.findByIdAndUpdate = async (eventId, updatePayload) => {
 exports.updateEvent = async (id, updateData) => {
   return await Event.findByIdAndUpdate(id, updateData, { new: true });
 };
-exports.updateEventEarnings = async (id, tickets) => {
-  console.log("Updating event earnings for event ID:", id);
-  console.log("Tickets:", tickets);
+
+exports.updateEventEarnings = async (eventId, tickets) => {
   
-  
-  // return await Event.findByIdAndUpdate(id, updateData, { new: true });
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const event = await Event.findById(eventId).session(session);
+    if (!event) throw new Error("Event not found");
+
+    let totalTicketsSold = 0;
+    let totalRevenue = 0;
+
+    for (const ticket of tickets) {
+      const { ticketTierId, quantity, totalPrice } = ticket;
+
+      const tier = event.ticketTiers._id(ticketTierId);
+      if (!tier) throw new Error(`Ticket tier not found: ${ticketTierId}`);
+
+      tier.sold += quantity;
+      tier.availableQuantity -= quantity;
+
+      totalTicketsSold += quantity;
+      totalRevenue += totalPrice;
+    }
+
+    event.analytics.totalTciketsSold += totalTicketsSold;
+    event.analytics.totalSale += totalRevenue;
+
+    await event.save({ session });
+    await session.commitTransaction();
+
+    console.log("Event earnings updated successfully.");
+    return event;
+  } catch (err) {
+    await session.abortTransaction();
+    console.error("Failed to update event earnings:", err);
+    throw err;
+  } finally {
+    session.endSession();
+  }
 };
+
 
 exports.deleteEvent = async (id) => {
   return await Event.findByIdAndDelete(id);

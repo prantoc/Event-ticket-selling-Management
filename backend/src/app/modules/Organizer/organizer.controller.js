@@ -231,3 +231,34 @@ exports.getOrgnizersEarnings = async (req, res) => {
     });
   }
 } 
+
+exports.checkOrganizerStatus = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const organizer = await organizerService.getOrganizerByUserId(userId);
+    if (!organizer) {
+      return res.status(404).json({
+        success: false,
+        message: "You did not create an organizer profile",
+         data: { isOrganizer: false },
+      });
+    }else if (organizer.verificationStatus !== "approved") {
+      return res.status(403).json({
+        success: false,
+        message: "admin did not approve your organizer profile yet",
+         data: { isOrganizer: false },
+      });
+    }
+    res.status(200).json({
+      success: true,
+      message: "Organizer status checked successfully",
+      data: { isOrganizer: true },
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+      error: err.message,
+    });
+  }
+}

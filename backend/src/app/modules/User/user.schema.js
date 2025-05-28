@@ -15,6 +15,10 @@ const UserSchema = new mongoose.Schema(
     },
     isDeleted: { type: Boolean, default: false },
     isVerified: { type: Boolean, default: false },
+    previouslyLoggedIn: {
+      type: Boolean,
+      default: false,
+    },
     needsPasswordChange: {
       type: Boolean,
       default: true,
@@ -23,7 +27,7 @@ const UserSchema = new mongoose.Schema(
       type: Date,
     },
     preferences: {
-      type: [String], 
+      type: [String],
       required: false,
       default: [],
     },

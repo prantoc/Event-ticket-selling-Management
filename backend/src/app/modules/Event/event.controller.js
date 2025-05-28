@@ -123,17 +123,32 @@ exports.getEventByOrganizer = async (req, res) => {
 exports.updateEvent = async (req, res) => {
   try {
     let eventData = req.body;
-    if (req.files) {
+
+    // Find the existing event first
+    const existingEvent = await eventService.getEventById(req.params.id);
+    if (!existingEvent) return errorResponse(res, "Event not found", 404);
+
+    // Handle image update
+    if (req.files && req.files.length > 0) {
       const eventImages = req.files.map((file) => file.path);
-      eventData = { ...req.body, eventImages };
+      eventData.eventImages = eventImages;
+    } else {
+      // Keep existing images if none are uploaded
+      eventData.eventImages = existingEvent.eventImages;
     }
-    const event = await eventService.updateEvent(req.params.id, eventData);
-    if (!event) return errorResponse(res, "Event not found", 404);
-    return successResponse(res, "Event updated successfully", event);
+
+    // Proceed to update
+    const updatedEvent = await eventService.updateEvent(
+      req.params.id,
+      eventData
+    );
+
+    return successResponse(res, "Event updated successfully", updatedEvent);
   } catch (err) {
     return errorResponse(res, "Failed to update event", 500, err.message);
   }
 };
+
 exports.updateCommisionRate = async (req, res) => {
   try {
     const { platformCommission } = req.body;

@@ -27,7 +27,7 @@ const loginUser = async (payload) => {
     );
   }
 
-  const isPreviouslyLoggedIn = user.previouslyLoggedIn;
+  const isPreviouslyLoggedIn = user.previouslyLoggedIn || false;
   const isMatch = await compareValidPass(payload.password, user.password);
 
   if (!isMatch) {
@@ -45,7 +45,7 @@ const loginUser = async (payload) => {
     role: user.role,
   });
 
-  const { password, ...res } = user;
+  const { password,previouslyLoggedIn, ...res } = user;
 
   return {
     ...res,

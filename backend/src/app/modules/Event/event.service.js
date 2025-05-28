@@ -36,6 +36,10 @@ exports.getAllEvents = async (query) => {
       .populate({
         path: "organizerId",
         select: "name email",
+        populate: {
+          path: "organizerProfile",
+          select: "organizationName logo website",
+        },
       })
       .populate("eventCategory"),
     query
@@ -83,6 +87,10 @@ exports.getAllEventsByAdmin = async (query) => {
       .populate({
         path: "organizerId",
         select: "name email",
+        populate: {
+          path: "organizerProfile",
+          select: "organizationName logo website",
+        },
       })
       .populate("eventCategory"),
     query
@@ -160,7 +168,6 @@ exports.updateEvent = async (id, updateData) => {
   return await Event.findByIdAndUpdate(id, updateData, { new: true });
 };
 
-
 exports.updateEventEarnings = async (eventId, tickets) => {
   try {
     const event = await Event.findById(eventId);
@@ -202,8 +209,6 @@ exports.updateEventEarnings = async (eventId, tickets) => {
     throw err;
   }
 };
-
-
 
 exports.deleteEvent = async (id) => {
   return await Event.findByIdAndDelete(id);

@@ -68,8 +68,6 @@ exports.handleStripeWebhook = async (req, res) => {
 
     try {
       const result = await bookingService.updateBooking(bookingId, payload);
-      console.log("Payment updated successfully:", result.tickets);
-
       const organizerUpdate = await organizerService.updateOrganizerEarnings(
         eventId,
         amount

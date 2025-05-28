@@ -129,14 +129,31 @@ exports.getEventById = async (id) => {
       select: "name email",
     })
     .populate("eventCategory");
+
   if (!event) return null;
+
+  // Format event images
   if (Array.isArray(event.eventImages)) {
     event.eventImages = event.eventImages.map((img) => formatFileUrl(img));
   }
+
+  // Format event category icon
   if (event.eventCategory) {
     event.eventCategory.icon = formatFileUrl(event.eventCategory?.icon);
   }
-  return event;
+
+  // ✅ Calculate total tickets
+  const totalTickets = event.ticketTiers.reduce((sum, tier) => {
+    const available = tier.availableQuantity || 0;
+    const sold = tier.sold || 0;
+    return sum + available + sold;
+  }, 0);
+
+  // Add totalTickets to the response object
+  const eventObj = event.toObject(); // convert to plain object if needed
+  eventObj.totalTickets = totalTickets;
+
+  return eventObj;
 };
 
 exports.getEventByOrganizer = async (organizerId) => {

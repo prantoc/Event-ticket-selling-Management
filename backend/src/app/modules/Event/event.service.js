@@ -159,6 +159,13 @@ exports.findByIdAndUpdate = async (eventId, updatePayload) => {
 exports.updateEvent = async (id, updateData) => {
   return await Event.findByIdAndUpdate(id, updateData, { new: true });
 };
+exports.updateEventEarnings = async (id, tickets) => {
+  console.log("Updating event earnings for event ID:", id);
+  console.log("Tickets:", tickets);
+  
+  
+  // return await Event.findByIdAndUpdate(id, updateData, { new: true });
+};
 
 exports.deleteEvent = async (id) => {
   return await Event.findByIdAndDelete(id);

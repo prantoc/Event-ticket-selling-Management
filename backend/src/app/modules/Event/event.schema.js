@@ -145,6 +145,14 @@ const eventSchema = new mongoose.Schema(
         type: Number,
         default: 0,
       },
+      totalTciketsSold: {
+        type: Number,
+        default: 0,
+      },
+      totalSale: {
+        type: Number,
+        default: 0,
+      },
     },
 
     platformCommission: {

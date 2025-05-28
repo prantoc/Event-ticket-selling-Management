@@ -1,6 +1,7 @@
 const paymentService = require("./payment.service");
 const bookingService = require("../Booking/booking.service");
 const organizerService = require("../Organizer/organizer.service");
+const eventService = require("../Event/event.service");
 const stripe = require("./stripeClient");
 const dotenv = require("dotenv");
 const path = require("path");
@@ -67,11 +68,15 @@ exports.handleStripeWebhook = async (req, res) => {
 
     try {
       const result = await bookingService.updateBooking(bookingId, payload);
-      console.log("Payment updated successfully:", result);
-      
+      console.log("Payment updated successfully:", result.tickets);
+
       const organizerUpdate = await organizerService.updateOrganizerEarnings(
         eventId,
         amount
+      );
+      const eventUpdate = await eventService.updateEventEarnings(
+        eventId,
+        result.tickets
       );
       console.log("Payment saved successfully:");
     } catch (err) {

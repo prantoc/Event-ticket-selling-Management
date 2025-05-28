@@ -46,4 +46,15 @@ UserSchema.pre("save", async function (next) {
   next();
 });
 
+// user.model.js or wherever your User schema is defined
+UserSchema.set("toObject", { virtuals: true });
+UserSchema.set("toJSON", { virtuals: true });
+
+UserSchema.virtual("organizerProfile", {
+  ref: "Organizer",
+  localField: "_id",
+  foreignField: "userId", // OrganizerProfile.userId
+  justOne: true,
+});
+
 module.exports = mongoose.model("User", UserSchema);

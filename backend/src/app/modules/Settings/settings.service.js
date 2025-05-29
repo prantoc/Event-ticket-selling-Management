@@ -6,6 +6,7 @@ const Event = require("../Event/event.schema");
 const Booking = require("../Booking/booking.schema");
 const User = require("../User/user.schema");
 const Organizer = require("../Organizer/organizer.schema");
+const Slider = require("./slider.schema");
 
 exports.getSettings = async () => {
   const settings = await Setting.findOne();
@@ -55,6 +56,28 @@ exports.upsertPolicy = async (policyData) => {
   );
 
   return updated;
+};
+
+exports.createSlider = async (sliderData) => {
+  const { image, position, title } = sliderData;
+  const slider = new Slider({
+    image,
+    position,
+    title,
+  });
+  return await slider.save();
+};
+
+exports.getSliders = async () => {
+  const sliders = await Slider.find().sort({ position: 1 });
+  return sliders.map((slider) => {
+    return {
+      _id: slider._id,
+      image: formatFileUrl(slider.image),
+      position: slider.position,
+      title: slider.title || "",
+    };
+  });
 };
 
 const getDateRange = (filter) => {
@@ -160,4 +183,24 @@ exports.getAdminDashboardStats = async (filter = "all") => {
     pendingOrganizers,
     pendingRefunds,
   };
+};
+
+exports.updateSlider = async (sliderId, updateData) => {
+  const slider = await Slider.findById(sliderId);
+  if (!slider) {
+    throw new Error("Slider not found");
+  }
+
+  Object.assign(slider, updateData);
+  return await slider.save();
+};
+
+exports.deleteSlider = async (sliderId) => {
+  const slider = await Slider.findById(sliderId);
+  if (!slider) {
+    throw new Error("Slider not found");
+  }
+
+  await slider.deleteOne();
+  return { message: "Slider deleted successfully" };
 };

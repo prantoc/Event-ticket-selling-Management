@@ -30,7 +30,7 @@ router.post(
 );
 router.get(
   "/sliders",
-  auth("superAdmin", "admin"),
+
   settingsController.getSlider
 );
 router.patch(

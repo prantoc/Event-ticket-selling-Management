@@ -22,6 +22,15 @@ exports.getSettings = async () => {
   if (data.companyLogo) {
     data.companyLogo = formatFileUrl(data.companyLogo);
   }
+  if (data.infoFirstImage) {
+    data.infoFirstImage = formatFileUrl(data.infoFirstImage);
+  }
+  if (data.infoSecondImage) {
+    data.infoSecondImage = formatFileUrl(data.infoSecondImage);
+  }
+  if (data.marqueeImage) {
+    data.marqueeImage = formatFileUrl(data.marqueeImage);
+  }
 
   return data;
 };

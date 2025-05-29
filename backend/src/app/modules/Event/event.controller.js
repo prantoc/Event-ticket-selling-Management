@@ -2,6 +2,9 @@ const QueryBuilder = require("../../builder/QueryBuilder");
 const { successResponse, errorResponse } = require("../../utils/response");
 const eventService = require("./event.service");
 const settingsService = require("../Settings/settings.service");
+const userService = require("../User/user.service");
+const newEventNoticeEmail = require("../../utils/newEventNoticeEmail");
+const updateEventStatusEmail = require("../../utils/updateEventStatusEmail");
 
 exports.createEvent = async (req, res) => {
   try {
@@ -208,6 +211,35 @@ exports.updateStatus = async (req, res) => {
       return res
         .status(404)
         .json({ success: false, message: "Event not found" });
+    }
+
+    const organizer = await userService.getUserByID(updatedEvent.organizerId);
+
+    // Send email to organizer about approval
+    updateEventStatusEmail(
+      organizer.email,
+      organizer.name,
+      updatedEvent.eventName,
+      status
+    );
+
+    if (status === "approved") {
+      // Fetch all users
+      const allUsers = await userService.users();
+
+      for (const user of allUsers) {
+        if (user.role === "user") {
+          const preferences = user.preferences || [];
+
+          // Send email if no preferences set or category is included
+          if (
+            preferences.length === 0 ||
+            preferences.includes(updatedEvent.category)
+          ) {
+            newEventNoticeEmail(user.email, updatedEvent.eventName);
+          }
+        }
+      }
     }
 
     return res.json({

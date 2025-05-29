@@ -12,9 +12,38 @@ router.get("/", settingsController.getAllSettings);
 router.patch(
   "/",
   auth("superAdmin", "admin"),
-  uploadMedia.single("companyLogo"),
+  uploadMedia.fields([
+    { name: "companyLogo", maxCount: 1 },
+    { name: "infoFirstImage", maxCount: 1 },
+    { name: "infoSecondImage", maxCount: 1 },
+    { name: "marqueeImage", maxCount: 1 },
+  ]),
   setRelativePath,
   settingsController.updateSettings
+);
+router.post(
+  "/create-slider",
+  auth("superAdmin", "admin"),
+  uploadMedia.single("image"),
+  setRelativePath,
+  settingsController.createSlider
+);
+router.get(
+  "/sliders",
+  auth("superAdmin", "admin"),
+  settingsController.getSlider
+);
+router.patch(
+  "/sliders/:id",
+  auth("superAdmin", "admin"),
+  uploadMedia.single("image"),
+  setRelativePath,
+  settingsController.updateSlider
+);
+router.delete(
+  "/sliders/:id",
+  auth("superAdmin", "admin"),
+  settingsController.deleteSlider
 );
 
 router.get("/policy", settingsController.getPolicies);

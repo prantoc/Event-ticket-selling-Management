@@ -2,9 +2,11 @@ const paymentService = require("./payment.service");
 const bookingService = require("../Booking/booking.service");
 const organizerService = require("../Organizer/organizer.service");
 const eventService = require("../Event/event.service");
+const userService = require("../User/user.service");
 const stripe = require("./stripeClient");
 const dotenv = require("dotenv");
 const path = require("path");
+const sendBookingSuccessEmail = require("../../utils/sendBookingSuccessEmail");
 dotenv.config({ path: path.join(process.cwd(), ".env") });
 
 exports.createCheckoutSession = async (req, res) => {
@@ -76,6 +78,9 @@ exports.handleStripeWebhook = async (req, res) => {
         eventId,
         result.tickets
       );
+      const user = await userService.getUserByID(userId);
+      sendBookingSuccessEmail(user.email, eventUpdate.eventName,amount);
+     
       console.log("Payment saved successfully:");
     } catch (err) {
       console.error("Error saving payment:", err);

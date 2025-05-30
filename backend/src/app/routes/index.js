@@ -9,6 +9,7 @@ const settingRoutes = require("../modules/Settings/settings.route");
 const faqRoutes = require("../modules/Faq/faq.route");
 const paymentRoutes = require("../modules/Payments/payment.routes");
 const payoutRoutes = require("../modules/Payout/payout.routes");
+const newsletterRoutes = require("../modules/Newsletter/newsletter.route");
 const { path } = require("../../app");
 const moduleRoutes = [
   {
@@ -50,6 +51,10 @@ const moduleRoutes = [
   {
     path: "/payouts",
     route: payoutRoutes,
+  },
+  {
+    path: "/newsletter",
+    route: newsletterRoutes,
   },
 ];
 

@@ -16,6 +16,7 @@ exports.getAllEvents = async (query) => {
     "thisWeek",
     "thisMonth",
     "today",
+    "city",
   ];
 
   // Sanitize empty string filters

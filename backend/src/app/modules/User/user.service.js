@@ -21,6 +21,21 @@ const users = async (query,adminId) => {
   };
 };
 
+const getSuperAdminEmails = async () => {
+  const superAdmins = await UserModel.find(
+    {
+      role: "superAdmin",
+      isDeleted: false,
+    },
+    { email: 1, _id: 0 } // only return email field
+  );
+
+  // Extract just the emails
+  const emails = superAdmins.map((user) => user.email);
+  return emails;
+};
+
+
 const getUserByID = async (id) => {
   const user = await UserModel.findOne({ _id: id, isDeleted: false });
   if (!user) throw new AppError(httpStatus.NOT_FOUND, "User not found");
@@ -100,6 +115,7 @@ const UserService = {
   updateAccountStatus,
   getUserByID,
   setUserPreferences,
+  getSuperAdminEmails,
 };
 
 module.exports = UserService;

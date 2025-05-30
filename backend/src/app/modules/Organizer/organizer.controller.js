@@ -1,6 +1,8 @@
 const UserService = require("../User/user.service");
 const organizerService = require("./organizer.service");
 const settingsService = require("../Settings/settings.service");
+const organizerApprovedEmail = require("../../utils/organizerApprovedEmail");
+const organizerRequestEmail = require("../../utils/organizerRequestEmail");
 
 // Create organizer profile
 exports.createProfile = async (req, res) => {
@@ -22,6 +24,13 @@ exports.createProfile = async (req, res) => {
         message: "Failed to create organizer profile",
         error: "",
       });
+    }
+    // Get all super admin emails
+    const allAdminsEmail = await UserService.getSuperAdminEmails();
+
+    // Send event request email to each super admin
+    for (const userEmail of allAdminsEmail) {
+      await organizerRequestEmail(userEmail, profile.organizationName);
     }
     res.status(201).json({
       success: true,
@@ -117,6 +126,7 @@ exports.approve = async (req, res) => {
     const userRoleUpdate = await UserService.updateUser(req.params.userId, {
       role: "organizer",
     });
+    organizerApprovedEmail(userRoleUpdate.email, userRoleUpdate.name);
     res.status(200).json({
       success: true,
       message: "Organizer approved successfully",
@@ -206,7 +216,6 @@ exports.deleteOrganizer = async (req, res) => {
   }
 };
 
-
 exports.getOrgnizersEarnings = async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -230,7 +239,7 @@ exports.getOrgnizersEarnings = async (req, res) => {
       error: err.message,
     });
   }
-} 
+};
 
 exports.checkOrganizerStatus = async (req, res) => {
   try {
@@ -240,13 +249,13 @@ exports.checkOrganizerStatus = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: "You did not create an organizer profile",
-         data: { isOrganizer: false },
+        data: { isOrganizer: false },
       });
-    }else if (organizer.verificationStatus !== "approved") {
+    } else if (organizer.verificationStatus !== "approved") {
       return res.status(403).json({
         success: false,
         message: "admin did not approve your organizer profile yet",
-         data: { isOrganizer: false },
+        data: { isOrganizer: false },
       });
     }
     res.status(200).json({
@@ -261,4 +270,4 @@ exports.checkOrganizerStatus = async (req, res) => {
       error: err.message,
     });
   }
-}
+};

@@ -5,6 +5,7 @@ const settingsService = require("../Settings/settings.service");
 const userService = require("../User/user.service");
 const newEventNoticeEmail = require("../../utils/newEventNoticeEmail");
 const updateEventStatusEmail = require("../../utils/updateEventStatusEmail");
+const eventRequestEmail = require("../../utils/eventRequestEmail");
 
 exports.createEvent = async (req, res) => {
   try {
@@ -21,6 +22,15 @@ exports.createEvent = async (req, res) => {
       eventImages,
       platformCommission: platformCommission,
     });
+
+    // Get all super admin emails
+    const allAdminsEmail = await userService.getSuperAdminEmails();
+
+    // Send event request email to each super admin
+    for (const userEmail of allAdminsEmail) {
+      await eventRequestEmail(userEmail, event.eventName);
+    }
+
     return successResponse(res, "Event created successfully", event);
   } catch (err) {
     return errorResponse(res, "Failed to create event", 500, err.message);

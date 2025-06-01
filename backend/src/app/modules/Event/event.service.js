@@ -102,9 +102,9 @@ exports.getAllEvents = async (query) => {
   if (query.city || query["venue.address.city"]) {
     const cityValue = query.city || query["venue.address.city"];
     baseFilter["venue.address.city"] = {
-      $regex: new RegExp(`^${cityValue.trim()}$`, "i") // Case-insensitive exact match
+      $regex: new RegExp(`^${cityValue.trim()}$`, "i"), // Case-insensitive exact match
     };
-    
+
     // Remove city from query object to prevent duplicate filtering
     delete query.city;
     delete query["venue.address.city"];
@@ -206,6 +206,10 @@ exports.getEventById = async (id) => {
     .populate({
       path: "organizerId",
       select: "name email",
+      populate: {
+        path: "organizerProfile",
+        select: "organizationName logo website",
+      },
     })
     .populate("eventCategory");
 

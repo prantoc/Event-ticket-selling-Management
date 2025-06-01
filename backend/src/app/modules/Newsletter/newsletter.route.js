@@ -6,6 +6,7 @@ const newsletterController = require("./newsletter.controller");
 
 // Subscribe
 router.post("/subscribe", newsletterController.subscribe);
+router.post("/sendemail", newsletterController.sendEmail);
 
 // Get all subscribers
 router.get("/", newsletterController.getAllSubscribers);

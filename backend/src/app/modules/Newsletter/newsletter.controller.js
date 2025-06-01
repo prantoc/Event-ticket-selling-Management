@@ -1,21 +1,34 @@
-
+const sendEmailTosubscribers = require("../../utils/sendEmailTosubscribers");
 const Newsletter = require("./newsletter.schema");
 
 // Create (Subscribe)
 exports.subscribe = async (req, res) => {
   try {
     const { email } = req.body;
-    if (!email) return res.status(400).json({ success: false, message: "Email is required" });
+    if (!email)
+      return res
+        .status(400)
+        .json({ success: false, message: "Email is required" });
 
     const existing = await Newsletter.findOne({ email });
     if (existing) {
-      return res.status(400).json({ success: false, message: "Email already subscribed" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Email already subscribed" });
     }
 
     const subscriber = await Newsletter.create({ email });
-    res.status(201).json({ success: true, message: "Subscribed successfully", data: subscriber });
+    res.status(201).json({
+      success: true,
+      message: "Subscribed successfully",
+      data: subscriber,
+    });
   } catch (err) {
-    res.status(500).json({ success: false, message: "Subscription failed", error: err.message });
+    res.status(500).json({
+      success: false,
+      message: "Subscription failed",
+      error: err.message,
+    });
   }
 };
 
@@ -25,7 +38,34 @@ exports.getAllSubscribers = async (req, res) => {
     const subscribers = await Newsletter.find().sort({ subscribedAt: -1 });
     res.status(200).json({ success: true, data: subscribers });
   } catch (err) {
-    res.status(500).json({ success: false, message: "Failed to fetch subscribers", error: err.message });
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch subscribers",
+      error: err.message,
+    });
+  }
+};
+
+exports.sendEmail = async (req, res) => {
+  const { subject, body } = req.body;
+
+  try {
+    const subscribers = await Newsletter.find().sort({ subscribedAt: -1 });
+    await Promise.all(
+      subscribers.map((sub) => {
+        const result = sendEmailTosubscribers(subject, body, sub.email);
+      })
+    );
+
+    res
+      .status(200)
+      .json({ success: true, message: "Email sent", data: subscribers });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch subscribers",
+      error: err.message,
+    });
   }
 };
 
@@ -36,11 +76,19 @@ exports.unsubscribe = async (req, res) => {
     const result = await Newsletter.findOneAndDelete({ email });
 
     if (!result) {
-      return res.status(404).json({ success: false, message: "Email not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Email not found" });
     }
 
-    res.status(200).json({ success: true, message: "Unsubscribed successfully" });
+    res
+      .status(200)
+      .json({ success: true, message: "Unsubscribed successfully" });
   } catch (err) {
-    res.status(500).json({ success: false, message: "Failed to unsubscribe", error: err.message });
+    res.status(500).json({
+      success: false,
+      message: "Failed to unsubscribe",
+      error: err.message,
+    });
   }
 };

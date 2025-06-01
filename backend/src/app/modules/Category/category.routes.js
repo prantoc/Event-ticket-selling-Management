@@ -14,15 +14,9 @@ router.post(
   setRelativePath,
   categoryController.createCategory
 );
+router.get("/", categoryController.getCategories);
 router.get(
-  "/",
-  auth("admin", "superAdmin", "user", "organizer"),
-  categoryController.getCategories
-);
-router.get(
-  "/:id",
-  auth("admin", "superAdmin", "user", "organizer"),
-  categoryController.getCategory
+  "/:id",  categoryController.getCategory
 );
 router.put(
   "/:id",

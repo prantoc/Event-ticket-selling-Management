@@ -6,71 +6,6 @@ exports.createEvent = async (eventData) => {
   return await Event.create(eventData);
 };
 
-// exports.getAllEvents = async (query) => {
-//   const searchableFields = ["eventName", "description", "tags"];
-//   const filterableFields = [
-//     "eventCategory",
-//     "eventDate",
-//     "month",
-//     "date",
-//     "thisWeek",
-//     "thisMonth",
-//     "today",
-//     "venue.address.city",
-//   ];
-
-//   // Sanitize empty string filters
-//   for (const key in query) {
-//     if (query[key] === "") {
-//       delete query[key];
-//     }
-//   }
-
-//   // Base public filters
-//   const baseFilter = {
-//     status: "approved",
-//     eventDate: { $gte: new Date() },
-//   };
-
-//   const eventsQuery = new QueryBuilder(
-//     Event.find(baseFilter)
-//       .populate({
-//         path: "organizerId",
-//         select: "name email",
-//         populate: {
-//           path: "organizerProfile",
-//           select: "organizationName logo website",
-//         },
-//       })
-//       .populate("eventCategory"),
-//     query
-//   )
-//     .search(searchableFields)
-//     .filter(filterableFields)
-//     .sort()
-//     .paginate()
-//     .fields();
-
-//   const events = await eventsQuery.modelQuery;
-//   const meta = await eventsQuery.countTotal();
-
-//   // Format image URLs
-//   const formattedEvents = events.map((event) => {
-//     if (event.eventCategory) {
-//       event.eventCategory.icon = formatFileUrl(event.eventCategory?.icon);
-//     }
-//     if (Array.isArray(event.eventImages)) {
-//       event.eventImages = event.eventImages.map((img) => formatFileUrl(img));
-//     }
-//     return event;
-//   });
-
-//   return {
-//     events: formattedEvents,
-//     meta,
-//   };
-// };
-
 exports.getAllEvents = async (query) => {
   const searchableFields = ["eventName", "description", "tags"];
   const filterableFields = [
@@ -218,6 +153,11 @@ exports.getEventById = async (id) => {
   // Format event images
   if (Array.isArray(event.eventImages)) {
     event.eventImages = event.eventImages.map((img) => formatFileUrl(img));
+   
+  }
+
+  if( event.organizerId.organizerProfile.logo){
+     event.organizerId.organizerProfile.logo=formatFileUrl( event.organizerId.organizerProfile.logo);
   }
 
   // Format event category icon

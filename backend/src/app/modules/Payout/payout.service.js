@@ -1,5 +1,6 @@
 const Payout = require("./payout.schema");
 const Organizer = require("../Organizer/organizer.schema");
+const QueryBuilder = require("../../builder/QueryBuilder");
 exports.createPayout = async (data, organizerId) => {
   const organizer = await Organizer.findOne({
     userId: organizerId,
@@ -37,8 +38,21 @@ exports.getAllPayouts = async (filters) => {
   if (filters.organizerId) {
     query.organizerId = filters.organizerId;
   }
+  if (filters.status) {
+    query.status = filters.status;
+  }
 
-  return await Payout.find(query).sort({ createdAt: -1 });
+  const builder = new QueryBuilder(Payout.find(query).sort({ createdAt: -1 }), filters)
+    .paginate()
+    .fields();
+
+  const payouts = await builder.modelQuery;
+  const meta = await builder.countTotal();
+
+  return {
+    payouts,
+    meta,
+  };
 };
 
 exports.updatePayout = async (id, data) => {

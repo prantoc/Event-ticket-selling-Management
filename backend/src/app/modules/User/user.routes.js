@@ -36,5 +36,10 @@ router.get(
   auth("user", "organizer", "admin", "superAdmin"),
   UserController.getUserByID
 );
+router.get(
+  "/me/role-check",
+  auth("user", "organizer", "admin", "superAdmin"),
+  UserController.checkUserRoleStatus
+);
 const userRoutes = router;
 module.exports = userRoutes;

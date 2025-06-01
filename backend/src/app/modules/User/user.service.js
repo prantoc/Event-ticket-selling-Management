@@ -5,16 +5,44 @@ const hashPassword = require("../../utils/hashedPassword");
 const { searchableFields, filterableFields } = require("./user.constants");
 const UserModel = require("./user.schema");
 const httpStatus = require("http-status").default;
-const users = async (query,adminId) => {
-  const builder = new QueryBuilder(UserModel.find({
-    isDeleted: false,
+const users = async (query, adminId) => {
+  // Clean and sanitize query params
+  const sanitizedQuery = { ...query };
 
-    _id : {
-      $ne: adminId
+  // Remove empty strings
+  for (const key in sanitizedQuery) {
+    if (sanitizedQuery[key] === "") {
+      delete sanitizedQuery[key];
     }
-  }), query).search(['name', 'email']).filter(filterableFields).sort().paginate().fields();
+  }
+
+  // Convert string "true"/"false" to boolean for isVerified
+  if (sanitizedQuery.isVerified !== undefined) {
+    if (sanitizedQuery.isVerified === "true") {
+      sanitizedQuery.isVerified = true;
+    } else if (sanitizedQuery.isVerified === "false") {
+      sanitizedQuery.isVerified = false;
+    } else {
+      delete sanitizedQuery.isVerified; // remove if not valid
+    }
+  }
+
+  const builder = new QueryBuilder(
+    UserModel.find({
+      isDeleted: false,
+      _id: { $ne: adminId },
+    }),
+    sanitizedQuery
+  )
+    .search(["name", "email"])
+    .filter(["role", "isVerified"])
+    .sort()
+    .paginate()
+    .fields();
+
   const result = await builder.modelQuery;
   const meta = await builder.countTotal();
+
   return {
     users: result,
     meta,
@@ -35,7 +63,6 @@ const getSuperAdminEmails = async () => {
   return emails;
 };
 
-
 const getUserByID = async (id) => {
   const user = await UserModel.findOne({ _id: id, isDeleted: false });
   if (!user) throw new AppError(httpStatus.NOT_FOUND, "User not found");
@@ -49,7 +76,7 @@ const createUser = async (payload) => {
   }
 
   const result = await UserModel.create({
-    ...payload
+    ...payload,
   });
   return result;
 };
@@ -98,10 +125,10 @@ const setUserPreferences = async (userId, preferences) => {
     userId,
     { preferences: preferences },
     { new: true }
-  ).select('name email preferences');
+  ).select("name email preferences");
 
   if (!updatedUser) {
-    throw new Error('User not found');
+    throw new Error("User not found");
   }
 
   return updatedUser;

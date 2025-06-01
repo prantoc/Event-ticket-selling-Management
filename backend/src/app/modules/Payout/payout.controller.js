@@ -22,10 +22,15 @@ exports.createPayout = async (req, res) => {
 
 exports.getAllPayouts = async (req, res) => {
   try {
-    const result = await payoutService.getAllPayouts(req.query);
+    const { payouts, meta } = await payoutService.getAllPayouts(req.query);
     res
       .status(200)
-      .json({ success: true, message: "Transaction fetched", data: result });
+      .json({
+        success: true,
+        message: "Transaction fetched",
+        data: payouts,
+        meta,
+      });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }

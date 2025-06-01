@@ -1,9 +1,11 @@
 const UserModel = require("../User/user.schema");
+const Organizer = require("../Organizer/organizer.schema");
 const httpStatus = require("http-status").default;
 const AppError = require("../../errors/AppError");
 const bcrypt = require("bcrypt");
 const compareValidPass = require("../../utils/validPass");
 const { createToken } = require("../../utils/jwt");
+const organizerSchema = require("../Organizer/organizer.schema");
 const registerUser = async (payload) => {
   const isExist = await UserModel.findOne({ email: payload.email });
   if (isExist) {
@@ -39,21 +41,35 @@ const loginUser = async (payload) => {
     await UserModel.updateOne({ _id: user._id }, { previouslyLoggedIn: true });
   }
 
+  // ✅ Fetch verificationStatus if user is an organizer
+  let verificationStatus = null;
+  if (user) {
+    const organizer = await organizerSchema
+      .findOne({
+        userId: user._id,
+      })
+      .lean();
+
+    if (organizer) {
+      verificationStatus = organizer.verificationStatus || null;
+    }
+  }
+
   const token = createToken({
     email: user.email,
     userId: user._id,
     role: user.role,
   });
 
-  const { password,previouslyLoggedIn, ...res } = user;
+  const { password, previouslyLoggedIn, ...res } = user;
 
   return {
     ...res,
-    isPreviouslyLoggedIn, // ✅ include in response
+    isPreviouslyLoggedIn,
+    verificationStatus, // ✅ include in response
     accessToken: token,
   };
 };
-
 
 module.exports = {
   registerUser,

@@ -25,6 +25,17 @@ const getUserByID = catchAsync(async (req, res) => {
     statusCode: httpStatus.OK,
   });
 });
+const checkUserRoleStatus = catchAsync(async (req, res) => {
+  const id = req.user.userId;
+
+  const result = await UserService.getUserByID(id);
+  sendResponse(res, {
+    success: true,
+    message: "User role checked successfully",
+    data: {role:result.role},
+    statusCode: httpStatus.OK,
+  });
+});
 
 const createUser = catchAsync(async (req, res) => {
   const result = await UserService.createUser(req.body);
@@ -123,5 +134,6 @@ const UserController = {
   updateUserByAdmin,
   getUserByID,
   updatePreferences,
+  checkUserRoleStatus,
 };
 module.exports = UserController;

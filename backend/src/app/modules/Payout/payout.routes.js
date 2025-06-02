@@ -8,6 +8,11 @@ router.post(
   auth("admin", "superAdmin", "organizer"),
   controller.createPayout
 );
+router.post(
+  "/manual",
+  auth("admin", "superAdmin", "organizer"),
+  controller.handleManualPayout
+);
 router.get(
   "/",
   auth("organizer", "admin", "superAdmin"),

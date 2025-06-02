@@ -108,6 +108,19 @@ exports.getAllEventsByAdmin = async (req, res) => {
   try {
     const query = { ...req.query };
     const today = new Date();
+    if (query.date) {
+      const dateOnly = new Date(query.date);
+      if (!isNaN(dateOnly)) {
+        const start = new Date(dateOnly);
+        start.setHours(0, 0, 0, 0);
+
+        const end = new Date(dateOnly);
+        end.setHours(23, 59, 59, 999);
+
+        query.eventDate = { $gte: start, $lte: end };
+      }
+      delete query.date;
+    }
     const result = await eventService.getAllEventsByAdmin(query);
     return res.json({
       success: true,

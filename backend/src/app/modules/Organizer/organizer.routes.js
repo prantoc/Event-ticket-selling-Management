@@ -16,7 +16,11 @@ router.post(
   organizerController.createProfile
 );
 router.get("/me", auth("organizer"), organizerController.getProfile);
-router.get("/check-status", auth("user","organizer"), organizerController.checkOrganizerStatus);
+router.get(
+  "/check-status",
+  auth("user", "organizer"),
+  organizerController.checkOrganizerStatus
+);
 router.put(
   "/me",
   auth("organizer"),
@@ -31,6 +35,18 @@ router.get(
   organizerController.getOrgnizersEarnings
 );
 
+//Stripe connect to organizer
+router.get(
+  "/stripe/connect",
+  auth("organizer", "user"),
+  organizerController.connectStripeAccount
+);
+router.get("/stripe/callback", organizerController.stripeCallback);
+router.get(
+  "/stripe/status",
+  auth("organizer", "user"),
+  organizerController.getStripeStatus
+);
 // Admin routes
 router.get(
   "/",
@@ -52,4 +68,5 @@ router.delete(
   auth("superAdmin", "admin"),
   organizerController.deleteOrganizer
 );
+
 module.exports = router;

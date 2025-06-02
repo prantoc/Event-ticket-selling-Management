@@ -3,6 +3,11 @@ const { backend_url } = require("../../config");
 const formatFileUrl = require("../../utils/formatFileUrl");
 const Organizer = require("./organizer.schema");
 const Event = require("../Event/event.schema");
+const stripe = require("../Payments/stripeClient");
+const dotenv = require("dotenv");
+const path = require("path");
+const allowedCountries = require("../../utils/allowedCountries");
+dotenv.config({ path: path.join(process.cwd(), ".env") });
 
 exports.createOrganizerProfile = async (data) => {
   return await Organizer.create(data);
@@ -147,5 +152,65 @@ exports.getOrgnizersEarnings = async (userId) => {
 
   return {
     earnings,
+  };
+};
+
+exports.createConnectAccountLink = async (userId) => {
+  const redirectUrl = `${process.env.BACKEND_URL}/api/v1/organizers/stripe/callback`;
+  const organizer = await Organizer.findOne({ userId });
+
+  if (!organizer) throw new Error('Organizer profile not found');
+
+  // Extract and validate country
+  let country = (organizer.address?.country || 'FR').toUpperCase();
+  // if (!allowedCountries.includes(country)) {
+  //   throw new Error(`Unsupported country '${country}' for Stripe Connect.`);
+  // }
+
+  const email = organizer.email || 'no-reply@example.com';
+
+  if (!organizer.stripeConnectAccountId) {
+    const account = await stripe.accounts.create({
+      type: 'express',
+      country:'FR',
+      email,
+      capabilities: {
+        card_payments: { requested: true },
+        transfers: { requested: true }
+      },
+      business_type: 'individual',
+    });
+
+    organizer.stripeConnectAccountId = account.id;
+    await organizer.save();
+  }
+
+  const accountLink = await stripe.accountLinks.create({
+    account: organizer.stripeConnectAccountId,
+    refresh_url:redirectUrl,
+    return_url:redirectUrl,
+    type: 'account_onboarding',
+  });
+
+  return accountLink.url;
+};
+
+exports.getStripeAccountStatus = async (userId) => {
+  const organizer = await Organizer.findOne({ userId });
+  if (!organizer || !organizer.stripeConnectAccountId) {
+    throw new Error('Stripe Connect account not found for organizer.');
+  }
+
+  const account = await stripe.accounts.retrieve(organizer.stripeConnectAccountId);
+
+  return {
+    id: account.id,
+    charges_enabled: account.charges_enabled,
+    payouts_enabled: account.payouts_enabled,
+    details_submitted: account.details_submitted,
+    requirements: account.requirements,
+    country: account.country,
+    email: account.email,
+    capabilities: account.capabilities
   };
 };

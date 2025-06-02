@@ -271,3 +271,28 @@ exports.checkOrganizerStatus = async (req, res) => {
     });
   }
 };
+
+exports.connectStripeAccount = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const url = await organizerService.createConnectAccountLink(userId);
+    res.json({ success: true, url });
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
+  }
+};
+
+exports.getStripeStatus = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const status = await organizerService.getStripeAccountStatus(userId);
+    res.json({ success: true, status });
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
+  }
+};
+
+exports.stripeCallback = async (req, res) => {
+  // This endpoint can be used to show a success page or refresh organizer data
+  res.send("Stripe onboarding completed. You can now close this window.");
+};

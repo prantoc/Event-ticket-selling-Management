@@ -10,6 +10,7 @@ const { backend_url } = require("../../config");
 const generateTicketPDF = require("../../utils/generateTicketPDF");
 const formatFileUrl = require("../../utils/formatFileUrl");
 const { default: status } = require("http-status");
+const stripe = require("../Payments/stripeClient");
 exports.createBooking = async (bookingData) => {
   const { userId, eventId, tickets, paymentMethod } = bookingData;
   const event = await Event.findById(eventId).populate("organizerId");
@@ -285,27 +286,54 @@ exports.requestRefund = async (bookingId, reason) => {
 
 exports.processRefund = async (bookingId, action, amount, adminNotes) => {
   const booking = await Booking.findById(bookingId);
+  if (!booking) throw new Error('Booking not found');
 
-  if (action === "approved") {
-    // here you could integrate with Stripe to refund
+  const paymentIntentId = booking.paymentDetails?.stripePaymentIntentId;
+  if (!paymentIntentId) throw new Error('Stripe paymentIntent not found');
+
+  if (booking.refundDetails?.status && ['processing', 'completed', 'rejected'].includes(booking.refundDetails.status)) {
+    throw new Error(`Cannot process refund. Current status: ${booking.refundDetails.status}`);
+  }
+
+  if (action === 'approved') {
+    // Validate refund amount
+    const totalPaid = booking.paymentDetails?.totalAmount || 0;
+    if (amount <= 0 || amount > totalPaid) {
+      throw new Error('Invalid refund amount');
+    }
+
+    // Create Stripe refund
+    const refund = await stripe.refunds.create({
+      payment_intent: paymentIntentId,
+      amount: Math.round(amount * 100), // Stripe expects amount in cents
+      reason: 'requested_by_customer',
+    });
+
     booking.paymentDetails.status =
-      amount < booking.paymentDetails.totalAmount
-        ? "partially_refunded"
-        : "refunded";
+      amount < totalPaid ? 'partially_refunded' : 'refunded';
 
     booking.refundDetails = {
-      ...booking.refundDetails,
-      status: "completed",
+      status: 'processing',
+      stripeRefundId: refund.id,
       processedAt: new Date(),
       amount,
       adminNotes,
     };
-  } else if (action === "rejected") {
-    booking.refundDetails.status = "rejected";
-    booking.refundDetails.adminNotes = adminNotes;
-  }
 
-  return await booking.save();
+    await booking.save();
+    return { success: true, message: 'Refund initiated', refund };
+
+  } else if (action === 'rejected') {
+    booking.refundDetails.status = 'rejected';
+    booking.refundDetails.adminNotes = adminNotes;
+    booking.refundDetails.processedAt = new Date();
+
+    await booking.save();
+    return { success: true, message: 'Refund rejected' };
+
+  } else {
+    throw new Error('Invalid refund action');
+  }
 };
 
 exports.scanTicket = async (ticketId) => {

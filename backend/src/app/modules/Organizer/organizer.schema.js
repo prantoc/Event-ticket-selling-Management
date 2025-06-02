@@ -1,96 +1,100 @@
-const mongoose = require('mongoose');
-const organizerProfileSchema = new mongoose.Schema({
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
-    unique: true
-  },
-  organizationName: {
-    type: String,
-    required: true
-  },
-  description: {
-    type: String,
-    maxlength: 1000
-  },
-  logo: {
-    type: String,
-    default: null
-  },
-  website: String,
-  socialMedia: {
-    facebook: String,
-    twitter: String,
-    instagram: String,
-    linkedin: String
-  },
-  address: {
-    street: String,
-    city: String,
-    state: String,
-    country: String,
-    zipCode: String
-  },
-  verificationStatus: {
-    type: String,
-    enum: ['pending', 'approved', 'rejected'],
-    default: 'pending'
-  },
-  // verificationDocuments: [{
-  //   documentType: String,
-  //   documentUrl: String,
-  //   uploadedAt: Date
-  // }],
-  rejectionReason: String,
-  stripeConnectAccountId: {
-    type: String,
-    default: null
-  },
-  commissionRate: {
-    type: Number,
-    default: 5,
-    min: 0,
-    max: 100
-  },
-  payoutSchedule: {
-    type: String,
-    enum: ['daily', 'weekly', 'monthly'],
-    default: 'weekly'
-  },
-  earnings: {
-    grossTotal: {
-      type: Number,
-      default: 0
+const mongoose = require("mongoose");
+const organizerProfileSchema = new mongoose.Schema(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      unique: true,
     },
-    totalPlatformFee: {
-      type: Number,
-      default: 0
+    organizationName: {
+      type: String,
+      required: true,
     },
-    total: {
-      type: Number,
-      default: 0
+    description: {
+      type: String,
+      maxlength: 1000,
     },
-    available: {
-      type: Number,
-      default: 0
+    logo: {
+      type: String,
+      default: null,
     },
-    pending: {
-      type: Number,
-      default: 0
+    website: String,
+    socialMedia: {
+      facebook: String,
+      twitter: String,
+      instagram: String,
+      linkedin: String,
     },
-    totalWithdraw: {
+    address: {
+      street: String,
+      city: String,
+      state: String,
+      country: String,
+      iso2: String,
+      zipCode: String,
+    },
+    verificationStatus: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
+    },
+    // verificationDocuments: [{
+    //   documentType: String,
+    //   documentUrl: String,
+    //   uploadedAt: Date
+    // }],
+    rejectionReason: String,
+    stripeConnectAccountId: {
+      type: String,
+      default: null,
+    },
+    commissionRate: {
       type: Number,
-      default: 0
-    }
+      default: 5,
+      min: 0,
+      max: 100,
+    },
+    payoutSchedule: {
+      type: String,
+      enum: ["daily", "weekly", "monthly"],
+      default: "weekly",
+    },
+    earnings: {
+      grossTotal: {
+        type: Number,
+        default: 0,
+      },
+      totalPlatformFee: {
+        type: Number,
+        default: 0,
+      },
+      total: {
+        type: Number,
+        default: 0,
+      },
+      available: {
+        type: Number,
+        default: 0,
+      },
+      pending: {
+        type: Number,
+        default: 0,
+      },
+      totalWithdraw: {
+        type: Number,
+        default: 0,
+      },
+    },
+    reviewedAt: Date,
+    reviewedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
   },
-  reviewedAt: Date,
-  reviewedBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
+  {
+    timestamps: true,
   }
-}, {
-  timestamps: true
-});
+);
 
-module.exports = mongoose.model('Organizer', organizerProfileSchema);
+module.exports = mongoose.model("Organizer", organizerProfileSchema);

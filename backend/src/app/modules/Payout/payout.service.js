@@ -42,7 +42,10 @@ exports.getAllPayouts = async (filters) => {
     query.status = filters.status;
   }
 
-  const builder = new QueryBuilder(Payout.find(query).sort({ createdAt: -1 }), filters)
+  const builder = new QueryBuilder(
+    Payout.find(query).sort({ createdAt: -1 }),
+    filters
+  )
     .paginate()
     .fields();
 
@@ -119,4 +122,57 @@ exports.updatePayout = async (id, data) => {
   }
 
   return updatedPayout;
+};
+
+exports.processPayout = async (organizerId, type = "manual") => {
+  const organizer = await Organizer.findOne({ userId: organizerId });
+  if (!organizer) throw new Error("Organizer not found");
+  if (!organizer.stripeConnectAccountId)
+    throw new Error("Organizer is not connected to Stripe");
+
+  const availableAmount = organizer.earnings.available;
+  if (availableAmount <= 0) throw new Error("No available balance for payout");
+
+  const amountInCents = Math.round(availableAmount * 100);
+
+  try {
+    const transfer = await stripe.transfers.create({
+      amount: amountInCents,
+      currency: "usd",
+      destination: organizer.stripeConnectAccountId,
+      metadata: {
+        organizerId: organizer._id.toString(),
+        type,
+      },
+    });
+
+    const payout = new Payout({
+      organizerId,
+      stripeTransferId: transfer.id,
+      amount: availableAmount,
+      status: "completed",
+      type,
+      currency: "usd",
+      completedAt: new Date(),
+    });
+
+    await payout.save();
+
+    organizer.earnings.available = 0;
+    organizer.earnings.totalWithdraw += availableAmount;
+    await organizer.save();
+
+    return payout;
+  } catch (error) {
+    const payout = new Payout({
+      organizerId,
+      amount: availableAmount,
+      status: "failed",
+      type,
+      currency: "usd",
+      failureReason: error.message,
+    });
+    await payout.save();
+    throw error;
+  }
 };

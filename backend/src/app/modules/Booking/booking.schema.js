@@ -89,6 +89,7 @@ const bookingSchema = new mongoose.Schema(
         enum: ["none", "requested", "processing", "completed", "rejected"],
         default: "none",
       },
+      stripeRefundId: String,
       requestedAt: Date,
       processedAt: Date,
       amount: Number,

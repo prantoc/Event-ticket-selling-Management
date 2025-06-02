@@ -73,6 +73,19 @@ exports.getAllEvents = async (req, res) => {
       query.eventDate = { $gte: start, $lte: end };
       delete query.thisMonth;
     }
+    if (query.date) {
+      const dateOnly = new Date(query.date);
+      if (!isNaN(dateOnly)) {
+        const start = new Date(dateOnly);
+        start.setHours(0, 0, 0, 0);
+
+        const end = new Date(dateOnly);
+        end.setHours(23, 59, 59, 999);
+
+        query.eventDate = { $gte: start, $lte: end };
+      }
+      delete query.date;
+    }
 
     const result = await eventService.getAllEvents(query);
 

@@ -17,6 +17,7 @@ const settingSchema = new mongoose.Schema(
     daysBeforeProductExpiry: Number,
     address: String,
     companyLogo: String,
+    navbarColor: String,
 
     infoFirstImage: String,
     infoSecondImage: String,

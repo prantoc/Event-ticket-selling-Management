@@ -87,5 +87,19 @@ exports.handleStripeWebhook = async (req, res) => {
     }
   }
 
+  if (event.type === 'charge.refunded') {
+  const refund = event.data.object;
+
+  await Booking.findOneAndUpdate(
+    { 'refundDetails.stripeRefundId': refund.id },
+    {
+      $set: {
+        'refundDetails.status': 'completed',
+        'refundDetails.processedAt': new Date()
+      }
+    }
+  );
+}
+
   res.json({ received: true });
 };

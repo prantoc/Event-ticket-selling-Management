@@ -20,17 +20,25 @@ exports.createPayout = async (req, res) => {
   }
 };
 
+exports.handleManualPayout = async (req, res) => {
+  try {
+    const userId = req.user.userId; // assuming authentication middleware
+    const payout = await payoutService.processPayout(userId, "manual");
+    res.status(200).json({ success: true, payout });
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
+  }
+};
+
 exports.getAllPayouts = async (req, res) => {
   try {
     const { payouts, meta } = await payoutService.getAllPayouts(req.query);
-    res
-      .status(200)
-      .json({
-        success: true,
-        message: "Transaction fetched",
-        data: payouts,
-        meta,
-      });
+    res.status(200).json({
+      success: true,
+      message: "Transaction fetched",
+      data: payouts,
+      meta,
+    });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }

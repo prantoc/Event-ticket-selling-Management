@@ -34,6 +34,7 @@ exports.createPayout = async (data, organizerId) => {
 };
 
 exports.getAllPayouts = async (filters) => {
+  const searchableFields = ["type", "status"];
   const query = {};
   if (filters.organizerId) {
     query.organizerId = filters.organizerId;
@@ -46,6 +47,7 @@ exports.getAllPayouts = async (filters) => {
     Payout.find(query).sort({ createdAt: -1 }),
     filters
   )
+    .search(searchableFields)
     .paginate()
     .fields();
 

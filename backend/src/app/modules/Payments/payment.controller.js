@@ -89,6 +89,7 @@ exports.handleStripeWebhook = async (req, res) => {
 
   if (event.type === "charge.refunded") {
     const refund = event.data.object;
+    console.log("Redund details : ",refund);
     
     try {
       const result = await bookingService.updateRefundBooking(refund.charge);

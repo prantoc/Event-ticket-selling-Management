@@ -284,7 +284,7 @@ exports.updateRefundBooking = async (refudId) => {
       new: true,
     }
   ).populate("eventId organizerId");
-  console.log("Update Details: ", result);
+  // console.log("Update Details: ", result);
   return result;
 };
 

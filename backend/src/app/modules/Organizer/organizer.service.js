@@ -195,6 +195,40 @@ exports.createConnectAccountLink = async (userId) => {
   return accountLink.url;
 };
 
+exports.disConnectAccount = async (userId) => {
+  const organizer = await Organizer.findOne({ userId });
+
+  if (!organizer) {
+    throw new Error("Organizer profile not found");
+  }
+
+  const stripeAccountId = organizer.stripeConnectAccountId;
+
+  if (!stripeAccountId) {
+    throw new Error("No Stripe Connect account to disconnect");
+  }
+
+  try {
+    // Revoke the account via Stripe OAuth
+
+    // Clear saved Stripe account in DB
+    organizer.stripeConnectAccountId = null;
+    const resutl = await organizer.save();
+
+    return {
+      success: true,
+      message: "Stripe Connect account disconnected successfully",
+      stripeResponse: resutl,
+    };
+  } catch (err) {
+    console.error(
+      "Stripe disconnection error:",
+      err.response?.data || err.message
+    );
+    throw new Error("Failed to disconnect Stripe account");
+  }
+};
+
 exports.getStripeAccountStatus = async (userId) => {
   const organizer = await Organizer.findOne({ userId });
   if (!organizer || !organizer.stripeConnectAccountId) {

@@ -15,7 +15,7 @@ router.post(
 );
 router.get(
   "/",
-  auth("organizer", "admin", "superAdmin"),
+  // auth("organizer", "admin", "superAdmin"),
   controller.getAllPayouts
 );
 router.patch(

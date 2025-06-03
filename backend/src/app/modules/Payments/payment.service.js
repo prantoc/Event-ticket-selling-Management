@@ -41,7 +41,9 @@ exports.createStripeCheckoutSession = async ({
       eventId,
       amount,
     },
-    transfer_group: `organizer_${event.organizerId}`,
+    payment_intent_data: {
+      transfer_group: `organizer_${event.organizerId}`,
+    },
   });
 
   return session.url;

@@ -89,7 +89,7 @@ exports.handleStripeWebhook = async (req, res) => {
 
   if (event.type === "charge.refunded") {
     const refund = event.data.object;
-    console.log("Payment refunded: ", refund);
+    console.log("Payment refunded: ", refund.id);
     const payload = {
       $set: {
         "refundDetails.status": "completed",

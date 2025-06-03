@@ -3,6 +3,7 @@ const organizerService = require("./organizer.service");
 const settingsService = require("../Settings/settings.service");
 const organizerApprovedEmail = require("../../utils/organizerApprovedEmail");
 const organizerRequestEmail = require("../../utils/organizerRequestEmail");
+const { client_url } = require("../../config");
 
 // Create organizer profile
 exports.createProfile = async (req, res) => {
@@ -303,6 +304,9 @@ exports.getStripeStatus = async (req, res) => {
 };
 
 exports.stripeCallback = async (req, res) => {
-  // This endpoint can be used to show a success page or refresh organizer data
-  res.send("Stripe onboarding completed. You can now close this window.");
+  // Redirect to your frontend dashboard or onboarding success page
+  const FRONTEND_URL = client_url || "https://lessortiesdediane.com";
+
+  // You can customize the redirect route as needed
+  res.redirect(`${FRONTEND_URL}/stripe-success`);
 };

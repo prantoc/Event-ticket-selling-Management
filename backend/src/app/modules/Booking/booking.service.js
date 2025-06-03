@@ -278,7 +278,7 @@ exports.updateRefundBooking = async (refudId) => {
     },
   };
   const result = await Booking.findOneAndUpdate(
-    { "refundDetails.balance_transaction": refudId },
+    { "refundDetails.chargeId": refudId },
     updatePayload,
     {
       new: true,
@@ -341,6 +341,7 @@ exports.processRefund = async (bookingId, action, amount, adminNotes) => {
     booking.refundDetails = {
       status: "processing",
       stripeRefundId: refund.id,
+      chargeId: refund.charge,
       balance_transaction: refund.balance_transaction,
       processedAt: new Date(),
       amount,

@@ -141,13 +141,13 @@ exports.getOrgnizersEarnings = async (userId) => {
   if (!organizer) return null;
 
   const earnings = {
-    organizationName: organizer.organizationName,
-    grossTotal: organizer.earnings.grossTotal || 0,
-    totalPlatformFee: organizer.earnings.totalPlatformFee || 0,
-    totalNetEarning: organizer.earnings.total,
-    availableBalance: organizer.earnings.available,
-    pending: organizer.earnings.pending,
-    totalWithdraw: organizer.earnings.totalWithdraw || 0,
+    organizationName: organizer?.organizationName,
+    grossTotal: organizer?.earnings?.grossTotal || 0,
+    totalPlatformFee: organizer?.earnings?.totalPlatformFee || 0,
+    totalNetEarning: organizer?.earnings?.total || 0,
+    availableBalance: organizer?.earnings?.available || 0,
+    pending: organizer?.earnings?.pending || 0,
+    totalWithdraw: organizer?.earnings?.totalWithdraw || 0,
   };
 
   return {

@@ -90,7 +90,8 @@ exports.handleStripeWebhook = async (req, res) => {
   if (event.type === "charge.refunded") {
     const refund = event.data.object;
     const charge = event.data.object;
-
+    console.log("Charge data",charge);
+    
     // Optional safety check
     if (charge.refunds?.data?.length > 0) {
       const refundId = charge.refunds.data[0].id; // ✅ Refund ID (e.g., "re_1Xyz...")

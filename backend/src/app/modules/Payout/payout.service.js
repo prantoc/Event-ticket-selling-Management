@@ -1,6 +1,7 @@
 const Payout = require("./payout.schema");
 const Organizer = require("../Organizer/organizer.schema");
 const QueryBuilder = require("../../builder/QueryBuilder");
+const stripe = require("../Payments/stripeClient");
 // exports.createPayout = async (data, organizerId) => {
 //   const organizer = await Organizer.findOne({
 //     userId: organizerId,

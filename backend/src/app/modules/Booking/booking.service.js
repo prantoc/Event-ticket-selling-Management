@@ -268,6 +268,11 @@ exports.updateBooking = async (bookingId, updatePayload) => {
     new: true,
   }).populate("eventId organizerId");
 };
+exports.updateRefundBooking = async (refudId, updatePayload) => {
+  return await Booking.findByIdAndUpdate( { "refundDetails.stripeRefundId": refudId }, updatePayload, {
+    new: true,
+  }).populate("eventId organizerId");
+};
 
 exports.requestRefund = async (bookingId, reason) => {
   const booking = await Booking.findById(bookingId);

@@ -90,6 +90,7 @@ const bookingSchema = new mongoose.Schema(
         default: "none",
       },
       stripeRefundId: String,
+      balance_transaction: String,
       requestedAt: Date,
       processedAt: Date,
       amount: Number,

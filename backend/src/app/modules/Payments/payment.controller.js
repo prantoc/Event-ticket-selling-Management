@@ -89,15 +89,22 @@ exports.handleStripeWebhook = async (req, res) => {
 
   if (event.type === "charge.refunded") {
     const refund = event.data.object;
-    const charge = event.data.object;
-    console.log("Charge data",charge);
-    
-    // Optional safety check
-    if (charge.refunds?.data?.length > 0) {
-      const refundId = charge.refunds.data[0].id; // ✅ Refund ID (e.g., "re_1Xyz...")
-      const result = await bookingService.updateRefundBooking(refundId);
-    } else {
-      console.warn("No refunds found in charge object");
+    try {
+      const result = await bookingService.updateRefundBooking(refund.balance_transaction);
+      // const organizerUpdate = await organizerService.updateOrganizerEarnings(
+      //   eventId,
+      //   amount
+      // );
+      // const eventUpdate = await eventService.updateEventEarnings(
+      //   eventId,
+      //   result.tickets
+      // );
+      // const user = await userService.getUserByID(userId);
+      // sendBookingSuccessEmail(user.email, eventUpdate.eventName, amount);
+
+      console.log("Refund saved successfully:");
+    } catch (err) {
+      console.error("Error saving Refund details:", err);
     }
   }
 

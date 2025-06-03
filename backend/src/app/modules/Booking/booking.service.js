@@ -268,6 +268,7 @@ exports.updateBooking = async (bookingId, updatePayload) => {
     new: true,
   }).populate("eventId organizerId");
 };
+
 exports.updateRefundBooking = async (refudId) => {
   console.log("Payment refunded: ", refudId);
   const updatePayload = {
@@ -277,7 +278,7 @@ exports.updateRefundBooking = async (refudId) => {
     },
   };
   const result = await Booking.findOneAndUpdate(
-    { "refundDetails.stripeRefundId": refudId },
+    { "refundDetails.balance_transaction": refudId },
     updatePayload,
     {
       new: true,
@@ -340,6 +341,7 @@ exports.processRefund = async (bookingId, action, amount, adminNotes) => {
     booking.refundDetails = {
       status: "processing",
       stripeRefundId: refund.id,
+      balance_transaction: refund.balance_transaction,
       processedAt: new Date(),
       amount,
       adminNotes,

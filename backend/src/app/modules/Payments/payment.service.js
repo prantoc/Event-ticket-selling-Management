@@ -1,6 +1,7 @@
 const stripe = require("./stripeClient");
 const dotenv = require("dotenv");
 const path = require("path");
+const Event = require("../Event/event.schema");
 dotenv.config({ path: path.join(process.cwd(), ".env") });
 exports.createStripeCheckoutSession = async ({
   amount,
@@ -11,7 +12,7 @@ exports.createStripeCheckoutSession = async ({
   eventName,
 }) => {
   console.log("Event id found in payment service:", eventId);
-  
+  const event = await Event.findById(eventId);
   const successUrl = `${process.env.CLIENT_URL}/payment-success`;
   const cancelUrl = `${process.env.CLIENT_URL}/payment-failed`;
   const session = await stripe.checkout.sessions.create({
@@ -40,6 +41,7 @@ exports.createStripeCheckoutSession = async ({
       eventId,
       amount,
     },
+    transfer_group: `organizer_${event.organizerId}`,
   });
 
   return session.url;

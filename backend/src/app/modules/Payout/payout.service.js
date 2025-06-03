@@ -52,6 +52,7 @@ exports.createPayout = async ( organizerId) => {
       amount: amountInCents,
       currency: "usd",
       destination: organizer.stripeConnectAccountId,
+      transfer_group: `organizer_${organizer.userId}`,
       metadata: {
         organizerId: organizer._id.toString(),
         type,

@@ -41,6 +41,11 @@ router.get(
   auth("organizer", "user"),
   organizerController.connectStripeAccount
 );
+router.get(
+  "/stripe/disconnect",
+  auth("organizer", "user"),
+  organizerController.disconnectStripeAccount
+);
 router.get("/stripe/callback", organizerController.stripeCallback);
 router.get(
   "/stripe/status",

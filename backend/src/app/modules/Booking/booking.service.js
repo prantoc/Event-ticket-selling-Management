@@ -630,7 +630,7 @@ exports.getRefundRequests = async ({
 
   return refunds.map((booking) => {
     const event = booking.eventId;
-    const totalAmount = booking.paymentDetails?.totalAmount || 0;
+    const totalAmount = booking.paymentDetails?.organizerRevenue || 0;
 
     let refundPercentage = 0;
     const requestDate = booking.refundDetails?.createdAt || booking.createdAt;

@@ -1,6 +1,7 @@
 const QueryBuilder = require("../../builder/QueryBuilder");
 const Event = require("../Event/event.schema");
 const Booking = require("./booking.schema");
+const Organizer = require("../Organizer/organizer.schema");
 const { v4: uuidv4 } = require("uuid");
 const QRCode = require("qrcode");
 const moment = require("moment");
@@ -277,7 +278,7 @@ exports.updateRefundBooking = async (refudId) => {
       "refundDetails.processedAt": new Date(),
     },
   };
-  const result = await Booking.findOneAndUpdate(
+  const booking = await Booking.findOneAndUpdate(
     { "refundDetails.chargeId": refudId },
     updatePayload,
     {
@@ -285,7 +286,55 @@ exports.updateRefundBooking = async (refudId) => {
     }
   ).populate("eventId organizerId");
   // console.log("Update Details: ", result);
-  return result;
+  if (!booking) {
+    console.warn("Booking not found for refund");
+    return null;
+  }
+
+  const event = await Event.findById(booking.eventId);
+  const organizer = await Organizer.findOne({ userId: booking.organizerId });
+  const refundedAmount = booking.refundDetails.amount || 0;
+
+  // 2. Adjust ticket tiers in event
+  if (event && Array.isArray(booking.tickets)) {
+    for (const ticket of booking.tickets) {
+      const tier = event.ticketTiers.id(ticket.ticketTierId);
+      if (tier) {
+        tier.availableQuantity += ticket.quantity;
+        tier.sold = Math.max(tier.sold - ticket.quantity, 0);
+      }
+    }
+    await event.save();
+    console.log("Event updated");
+    
+  }
+
+  // 3. Adjust organizer earnings
+  if (organizer && organizer.earnings) {
+    const platformFee = booking.paymentDetails?.platformFee || 0;
+    const netRefund = refundedAmount - platformFee;
+
+    organizer.earnings.grossTotal = Math.max(
+      organizer.earnings.grossTotal - refundedAmount,
+      0
+    );
+    organizer.earnings.totalPlatformFee = Math.max(
+      organizer.earnings.totalPlatformFee - platformFee,
+      0
+    );
+    organizer.earnings.total = Math.max(
+      organizer.earnings.total - netRefund,
+      0
+    );
+    organizer.earnings.available = Math.max(
+      organizer.earnings.available - netRefund,
+      0
+    );
+
+    await organizer.save();
+    console.log("Organizer updated");
+  }
+  return booking;
 };
 
 exports.requestRefund = async (bookingId, reason) => {

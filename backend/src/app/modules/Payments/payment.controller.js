@@ -93,18 +93,7 @@ exports.handleStripeWebhook = async (req, res) => {
     
     try {
       const result = await bookingService.updateRefundBooking(refund.id);
-      // const organizerUpdate = await organizerService.updateOrganizerEarnings(
-      //   eventId,
-      //   amount
-      // );
-      // const eventUpdate = await eventService.updateEventEarnings(
-      //   eventId,
-      //   result.tickets
-      // );
-      // const user = await userService.getUserByID(userId);
-      // sendBookingSuccessEmail(user.email, eventUpdate.eventName, amount);
-
-      console.log("Refund saved successfully:");
+      console.log("Refund updated successfully:");
     } catch (err) {
       console.error("Error saving Refund details:", err);
     }

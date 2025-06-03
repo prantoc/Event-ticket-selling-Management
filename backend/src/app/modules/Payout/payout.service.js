@@ -1,36 +1,91 @@
 const Payout = require("./payout.schema");
 const Organizer = require("../Organizer/organizer.schema");
 const QueryBuilder = require("../../builder/QueryBuilder");
-exports.createPayout = async (data, organizerId) => {
-  const organizer = await Organizer.findOne({
-    userId: organizerId,
-  });
+// exports.createPayout = async (data, organizerId) => {
+//   const organizer = await Organizer.findOne({
+//     userId: organizerId,
+//   });
 
-  if (!organizer) {
-    throw new Error("Organizer not found");
-  }
+//   if (!organizer) {
+//     throw new Error("Organizer not found");
+//   }
 
-  // Ensure earnings object exists
-  if (!organizer.earnings) {
-    organizer.earnings = {};
-  }
+//   // Ensure earnings object exists
+//   if (!organizer.earnings) {
+//     organizer.earnings = {};
+//   }
 
-  // Initialize fields if they don't exist
-  organizer.earnings.available = organizer.earnings.available || 0;
-  organizer.earnings.pending = organizer.earnings.pending || 0;
+//   // Initialize fields if they don't exist
+//   organizer.earnings.available = organizer.earnings.available || 0;
+//   organizer.earnings.pending = organizer.earnings.pending || 0;
 
-  // Update earnings
-  organizer.earnings.available -= data.amount;
-  organizer.earnings.pending += data.amount;
+//   // Update earnings
+//   organizer.earnings.available -= data.amount;
+//   organizer.earnings.pending += data.amount;
 
-  // // Prevent negative available balance
-  if (organizer.earnings.available < 0) {
+//   // // Prevent negative available balance
+//   if (organizer.earnings.available < 0) {
+//     organizer.earnings.available = 0;
+//   }
+
+//   await organizer.save();
+//   const payout = new Payout(data);
+//   return await payout.save();
+// };
+
+exports.createPayout = async ({ organizerId, type = "manual" }) => {
+  const organizer = await Organizer.findOne({ userId: organizerId });
+  if (!organizer) throw new Error("Organizer not found");
+  if (!organizer.stripeConnectAccountId)
+    throw new Error("Organizer not connected to Stripe");
+
+  const availableAmount = organizer.earnings?.available || 0;
+  if (availableAmount <= 0) throw new Error("No available balance");
+
+  const amountInCents = Math.round(availableAmount * 100);
+
+  try {
+    const transfer = await stripe.transfers.create({
+      amount: amountInCents,
+      currency: "usd",
+      destination: organizer.stripeConnectAccountId,
+      metadata: {
+        organizerId: organizer._id.toString(),
+        type,
+      },
+    });
+
+    // Save payout
+    const payout = new Payout({
+      organizerId,
+      stripeTransferId: transfer.id,
+      amount: availableAmount,
+      status: "completed",
+      type,
+      currency: "usd",
+      completedAt: new Date(),
+    });
+
+    await payout.save();
+
+    // Update organizer earnings
     organizer.earnings.available = 0;
-  }
+    organizer.earnings.totalWithdraw += availableAmount;
+    await organizer.save();
 
-  await organizer.save();
-  const payout = new Payout(data);
-  return await payout.save();
+    return payout;
+  } catch (err) {
+    const failedPayout = new Payout({
+      organizerId,
+      amount: availableAmount,
+      status: "failed",
+      type,
+      currency: "usd",
+      failureReason: err.message,
+    });
+    await failedPayout.save();
+    throw err;
+  }
 };
 
 exports.getAllPayouts = async (filters) => {

@@ -209,7 +209,10 @@ exports.getBookingsByOrganizer = async (organizerId, query) => {
     delete query.eventId;
   }
   const bookingsQuery = new QueryBuilder(
-    Booking.find({ organizerId })
+    Booking.find({
+      organizerId,
+      "refundDetails.status": "none",
+    })
       .populate("userId", "name email phone")
       .populate("eventId", "eventName"),
     query
@@ -306,7 +309,6 @@ exports.updateRefundBooking = async (refudId) => {
     }
     await event.save();
     console.log("Event updated");
-    
   }
 
   // 3. Adjust organizer earnings
@@ -479,6 +481,8 @@ exports.getOrganizerDashboard = async (organizerId) => {
     "paymentDetails.status": "success",
   });
 
+  const organizer = await Organizer.findOne({ userId: organizerId });
+
   let totalSales = 0;
   let totalPlatformFee = 0;
   let totalTicketsSold = 0;
@@ -526,8 +530,8 @@ exports.getOrganizerDashboard = async (organizerId) => {
     : 0;
 
   const totalBookings = bookings.length;
-  const grossRevenue = totalSales;
-  const netEarnings = totalSales - totalPlatformFee;
+  const grossRevenue = organizer.earnings.grossTotal;
+  const netEarnings = organizer.earnings.total;
   const refundRate = totalBookings ? (totalRefunds / totalBookings) * 100 : 0;
 
   return {

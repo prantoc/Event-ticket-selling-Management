@@ -33,7 +33,9 @@ const QueryBuilder = require("../../builder/QueryBuilder");
 //   return await payout.save();
 // };
 
-exports.createPayout = async ({ organizerId, type = "manual" }) => {
+exports.createPayout = async ( organizerId) => {
+  const type = "manual";
+  
   const organizer = await Organizer.findOne({ userId: organizerId });
   if (!organizer) throw new Error("Organizer not found");
   if (!organizer.stripeConnectAccountId)

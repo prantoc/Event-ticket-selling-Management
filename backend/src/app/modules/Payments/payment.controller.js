@@ -79,27 +79,44 @@ exports.handleStripeWebhook = async (req, res) => {
         result.tickets
       );
       const user = await userService.getUserByID(userId);
-      sendBookingSuccessEmail(user.email, eventUpdate.eventName,amount);
-     
+      sendBookingSuccessEmail(user.email, eventUpdate.eventName, amount);
+
       console.log("Payment saved successfully:");
     } catch (err) {
       console.error("Error saving payment:", err);
     }
   }
 
-  if (event.type === 'charge.refunded') {
-  const refund = event.data.object;
-
-  await Booking.findOneAndUpdate(
-    { 'refundDetails.stripeRefundId': refund.id },
-    {
+  if (event.type === "charge.refunded") {
+    const refund = event.data.object;
+    console.log("Payment refunded: ", refund);
+    const payload = {
       $set: {
-        'refundDetails.status': 'completed',
-        'refundDetails.processedAt': new Date()
-      }
+        "refundDetails.status": "completed",
+        "refundDetails.processedAt": new Date(),
+      },
+    };
+    try {
+      const result = await bookingService.updateRefundBooking(
+        refund.id,
+        payload
+      );
+      // const organizerUpdate = await organizerService.updateOrganizerEarnings(
+      //   eventId,
+      //   amount
+      // );
+      // const eventUpdate = await eventService.updateEventEarnings(
+      //   eventId,
+      //   result.tickets
+      // );
+      // const user = await userService.getUserByID(userId);
+      // sendBookingSuccessEmail(user.email, eventUpdate.eventName, amount);
+
+      console.log("Refund saved successfully:");
+    } catch (err) {
+      console.error("Error saving Refund details:", err);
     }
-  );
-}
+  }
 
   res.json({ received: true });
 };

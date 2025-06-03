@@ -281,6 +281,16 @@ exports.connectStripeAccount = async (req, res) => {
     res.status(400).json({ success: false, message: err.message });
   }
 };
+exports.disconnectStripeAccount = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { success, message, stripeResponse } =
+      await organizerService.disConnectAccount(userId);
+    res.json({ success, message, data: stripeResponse });
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
+  }
+};
 
 exports.getStripeStatus = async (req, res) => {
   try {

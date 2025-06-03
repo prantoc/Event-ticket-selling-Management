@@ -269,7 +269,7 @@ exports.updateBooking = async (bookingId, updatePayload) => {
   }).populate("eventId organizerId");
 };
 exports.updateRefundBooking = async (refudId) => {
-  console.log("Payment refunded: ", refund);
+  console.log("Payment refunded: ", refudId);
   const updatePayload = {
     $set: {
       "refundDetails.status": "completed",

@@ -138,31 +138,18 @@ exports.getAdminDashboardStats = async (filter = "all") => {
     role: "user",
   });
 
-  // Revenue
-  const bookings = await Booking.find({
-    ...dateFilter,
-    "paymentDetails.status": "success",
-  });
+  // Revenue and Platform Commission (from Organizer earnings)
+  const organizers = await Organizer.find(dateFilter);
 
-  const totalRevenue = bookings.reduce(
-    (sum, b) => sum + (b.paymentDetails?.totalAmount || 0),
+  const totalRevenue = organizers.reduce(
+    (sum, org) => sum + (org.earnings?.grossTotal || 0),
     0
   );
 
-  const totalPlatformCommission = await Booking.aggregate([
-    {
-      $match: {
-        ...dateFilter,
-        "paymentDetails.status": "success",
-      },
-    },
-    {
-      $group: {
-        _id: null,
-        total: { $sum: "$paymentDetails.platformFee" },
-      },
-    },
-  ]).then((res) => res[0]?.total || 0);
+  const totalPlatformCommission = organizers.reduce(
+    (sum, org) => sum + (org.earnings?.totalPlatformFee || 0),
+    0
+  );
 
   // Pending approvals
   const pendingEvents = await Event.countDocuments({
@@ -193,6 +180,7 @@ exports.getAdminDashboardStats = async (filter = "all") => {
     pendingRefunds,
   };
 };
+
 
 exports.updateSlider = async (sliderId, updateData) => {
   const slider = await Slider.findById(sliderId);

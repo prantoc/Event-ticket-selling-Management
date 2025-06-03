@@ -320,10 +320,10 @@ exports.updateRefundBooking = async (refudId) => {
       organizer.earnings.grossTotal - refundedAmount,
       0
     );
-    organizer.earnings.totalPlatformFee = Math.max(
-      organizer.earnings.totalPlatformFee - platformFee,
-      0
-    );
+    // organizer.earnings.totalPlatformFee = Math.max(
+    //   organizer.earnings.totalPlatformFee - platformFee,
+    //   0
+    // );
     organizer.earnings.total = Math.max(
       organizer.earnings.total - netRefund,
       0

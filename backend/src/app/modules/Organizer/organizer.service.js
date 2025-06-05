@@ -7,6 +7,7 @@ const stripe = require("../Payments/stripeClient");
 const dotenv = require("dotenv");
 const path = require("path");
 const allowedCountries = require("../../utils/allowedCountries");
+const { getPresignedUrl } = require("../../utils/formatMinioUrl");
 dotenv.config({ path: path.join(process.cwd(), ".env") });
 
 exports.createOrganizerProfile = async (data) => {
@@ -17,7 +18,8 @@ exports.getOrganizerByUserId = async (userId) => {
   const data = await Organizer.findOne({ userId }).lean();
   if (!data) return null;
   if (data.logo) {
-    data.logo = formatFileUrl(data.logo);
+    // data.logo = formatFileUrl(data.logo);
+    data.logo = await getPresignedUrl(data.logo, "organizer-images");
   }
   return data;
 };

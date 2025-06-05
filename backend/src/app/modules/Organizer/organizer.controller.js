@@ -9,7 +9,8 @@ const { client_url } = require("../../config");
 exports.createProfile = async (req, res) => {
   try {
     const userId = req.user.userId;
-    const logo = req.file ? req.file.path : null;
+    // const logo = req.file ? req.file.path : null;
+    const logo = req.minioFiles ? req.minioFiles.logo : null;
     const settings = await settingsService.getSettings();
     const platformCommission = settings?.globalCommissionRate || 5;
     const data = {
@@ -80,8 +81,8 @@ exports.updateProfile = async (req, res) => {
     const data = { ...req.body };
 
     // Only add logo if it was uploaded
-    if (req.file) {
-      data.logo = req.file.path;
+    if (req.minioFiles.logo) {
+      data.logo = req.minioFiles.logo;
     }
 
     const updated = await organizerService.updateOrganizerProfile(userId, data);

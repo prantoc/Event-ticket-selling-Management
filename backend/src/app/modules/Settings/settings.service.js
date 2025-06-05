@@ -7,29 +7,40 @@ const Booking = require("../Booking/booking.schema");
 const User = require("../User/user.schema");
 const Organizer = require("../Organizer/organizer.schema");
 const Slider = require("./slider.schema");
+const { getPresignedUrl } = require("../../utils/formatMinioUrl");
 
 exports.getSettings = async () => {
   const settings = await Setting.findOne();
-
   if (!settings) {
-    // Just throw an error and handle it in the controller
     throw new Error("Settings not found");
   }
 
   const data = settings.toObject();
 
-  // ✅ Format companyLogo URL
+  // Replace objectName → presigned URLs
   if (data.companyLogo) {
-    data.companyLogo = formatFileUrl(data.companyLogo);
+    data.companyLogo = await getPresignedUrl(
+      data.companyLogo,
+      "settings-images"
+    );
   }
   if (data.infoFirstImage) {
-    data.infoFirstImage = formatFileUrl(data.infoFirstImage);
+    data.infoFirstImage = await getPresignedUrl(
+      data.infoFirstImage,
+      "settings-images"
+    );
   }
   if (data.infoSecondImage) {
-    data.infoSecondImage = formatFileUrl(data.infoSecondImage);
+    data.infoSecondImage = await getPresignedUrl(
+      data.infoSecondImage,
+      "settings-images"
+    );
   }
   if (data.marqueeImage) {
-    data.marqueeImage = formatFileUrl(data.marqueeImage);
+    data.marqueeImage = await getPresignedUrl(
+      data.marqueeImage,
+      "settings-images"
+    );
   }
 
   return data;
@@ -79,14 +90,24 @@ exports.createSlider = async (sliderData) => {
 
 exports.getSliders = async () => {
   const sliders = await Slider.find().sort({ position: 1 });
-  return sliders.map((slider) => {
-    return {
-      _id: slider._id,
-      image: formatFileUrl(slider.image),
-      position: slider.position,
-      title: slider.title || "",
-    };
-  });
+
+  const processed = await Promise.all(
+    sliders.map(async (slider) => {
+      let imgUrl = null;
+      if (slider.image) {
+        imgUrl = await getPresignedUrl(slider.image, "settings-images");
+      }
+
+      return {
+        _id: slider._id,
+        image: imgUrl,
+        position: slider.position,
+        title: slider.title || "",
+      };
+    })
+  );
+
+  return processed;
 };
 
 const getDateRange = (filter) => {
@@ -180,7 +201,6 @@ exports.getAdminDashboardStats = async (filter = "all") => {
     pendingRefunds,
   };
 };
-
 
 exports.updateSlider = async (sliderId, updateData) => {
   const slider = await Slider.findById(sliderId);

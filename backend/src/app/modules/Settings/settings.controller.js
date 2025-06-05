@@ -22,24 +22,24 @@ exports.getAllSettings = async (req, res) => {
 exports.updateSettings = async (req, res) => {
   try {
     const data = { ...req.body };
-    
-    if (req.files.companyLogo) {
-      const fullPath = req.files.companyLogo[0].path;
-      data.companyLogo = getRelativePath(fullPath);
+    // Example for fields
+    const logoUrl = req.minioFiles.companyLogo?.[0];
+    const firstImgUrl = req.minioFiles.infoFirstImage?.[0];
+    const secondImgUrl = req.minioFiles.infoSecondImage?.[0];
+    const marqueeImgUrl = req.minioFiles.marqueeImage?.[0];
+
+    if (logoUrl) {
+      data.companyLogo = logoUrl;
     }
 
-    if (req.files.infoFirstImage) {
-      const fullPath = req.files.infoFirstImage[0].path;
-      data.infoFirstImage = getRelativePath(fullPath);
+    if (firstImgUrl) {
+      data.infoFirstImage = firstImgUrl;
     }
-    if (req.files.infoSecondImage) {
-      const fullPath = req.files.infoSecondImage[0].path;
-      data.infoSecondImage = getRelativePath(fullPath);
+    if (secondImgUrl) {
+      data.infoSecondImage = secondImgUrl;
     }
-    if (req.files.marqueeImage) {
-      const fullPath = req.files.marqueeImage[0].path;
-
-      data.marqueeImage = getRelativePath(fullPath);
+    if (marqueeImgUrl) {
+      data.marqueeImage = marqueeImgUrl;
     }
 
     const updated = await settingsService.updateSettings(data);
@@ -97,8 +97,9 @@ exports.getAdminDashboard = async (req, res) => {
 
 exports.createSlider = async (req, res) => {
   try {
+    const logoUrl = req.minioFiles?.image;
     const sliderData = {
-      image: req.file.path,
+      image: logoUrl,
       position: req.body.position || 0,
       title: req.body.title || "",
     };
@@ -142,9 +143,12 @@ exports.updateSlider = async (req, res) => {
       position: req.body.position,
       title: req.body.title || "",
     };
+    const logoUrl = req.minioFiles?.image;
 
-    if (req.file) {
-      updateData.image = req.file.path;
+    if (logoUrl) {
+      console.log(logoUrl);
+
+      updateData.image = logoUrl;
     }
 
     const updatedSlider = await settingsService.updateSlider(

@@ -1,5 +1,6 @@
 const QueryBuilder = require("../../builder/QueryBuilder");
 const formatFileUrl = require("../../utils/formatFileUrl");
+const { getPresignedUrl } = require("../../utils/formatMinioUrl");
 const Event = require("./event.schema");
 const mongoose = require("mongoose");
 exports.createEvent = async (eventData) => {
@@ -68,15 +69,34 @@ exports.getAllEvents = async (query) => {
   const meta = await eventsQuery.countTotal();
 
   // Format image URLs
-  const formattedEvents = events.map((event) => {
-    if (event.eventCategory) {
-      event.eventCategory.icon = formatFileUrl(event.eventCategory?.icon);
-    }
-    if (Array.isArray(event.eventImages)) {
-      event.eventImages = event.eventImages.map((img) => formatFileUrl(img));
-    }
-    return event;
-  });
+  // const formattedEvents = events.map((event) => {
+  //   if (event.eventCategory) {
+  //     event.eventCategory.icon = formatFileUrl(event.eventCategory?.icon);
+  //   }
+  //   if (Array.isArray(event.eventImages)) {
+  //     event.eventImages = event.eventImages.map((img) => formatFileUrl(img));
+  //   }
+  //   return event;
+  // });
+  const formattedEvents = await Promise.all(
+    events.map(async (event) => {
+      if (event.eventCategory?.icon) {
+        // Adjust bucket name if different
+        event.eventCategory.icon = await getPresignedUrl(
+          event.eventCategory.icon,
+          "event-category-icons"
+        );
+      }
+
+      if (Array.isArray(event.eventImages)) {
+        event.eventImages = await Promise.all(
+          event.eventImages.map((img) => getPresignedUrl(img, "event-images"))
+        );
+      }
+
+      return event;
+    })
+  );
 
   return {
     events: formattedEvents,
@@ -119,16 +139,35 @@ exports.getAllEventsByAdmin = async (query) => {
   const meta = await eventsQuery.countTotal();
 
   // Format image URLs
-  const formattedEvents = events.map((event) => {
-    if (event.eventCategory) {
-      event.eventCategory.icon = formatFileUrl(event.eventCategory?.icon);
-    }
+  // const formattedEvents = events.map((event) => {
+  //   if (event.eventCategory) {
+  //     event.eventCategory.icon = formatFileUrl(event.eventCategory?.icon);
+  //   }
 
-    if (Array.isArray(event.eventImages)) {
-      event.eventImages = event.eventImages.map((img) => formatFileUrl(img));
-    }
-    return event;
-  });
+  //   if (Array.isArray(event.eventImages)) {
+  //     event.eventImages = event.eventImages.map((img) => formatFileUrl(img));
+  //   }
+  //   return event;
+  // });
+  const formattedEvents = await Promise.all(
+    events.map(async (event) => {
+      if (event.eventCategory?.icon) {
+        // Adjust bucket name if different
+        event.eventCategory.icon = await getPresignedUrl(
+          event.eventCategory.icon,
+          "event-category-icons"
+        );
+      }
+
+      if (Array.isArray(event.eventImages)) {
+        event.eventImages = await Promise.all(
+          event.eventImages.map((img) => getPresignedUrl(img, "event-images"))
+        );
+      }
+
+      return event;
+    })
+  );
 
   return {
     events: formattedEvents,
@@ -150,30 +189,41 @@ exports.getEventById = async (id) => {
 
   if (!event) return null;
 
+  // Clone to plain object
+  const eventObj = event.toObject();
+
   // Format event images
-  if (Array.isArray(event.eventImages)) {
-    event.eventImages = event.eventImages.map((img) => formatFileUrl(img));
-   
+  if (Array.isArray(eventObj.eventImages)) {
+    eventObj.eventImages = await Promise.all(
+      eventObj.eventImages.map((img) => getPresignedUrl(img, "event-images"))
+    );
   }
 
-  if( event.organizerId.organizerProfile.logo){
-     event.organizerId.organizerProfile.logo=formatFileUrl( event.organizerId.organizerProfile.logo);
+  // Format organizer logo
+  const logo = eventObj.organizerId?.organizerProfile?.logo;
+  if (logo) {
+    eventObj.organizerId.organizerProfile.logo = await getPresignedUrl(
+      logo,
+      "organizer-images"
+    );
   }
 
   // Format event category icon
-  if (event.eventCategory) {
-    event.eventCategory.icon = formatFileUrl(event.eventCategory?.icon);
+  const icon = eventObj.eventCategory?.icon;
+  if (icon) {
+    eventObj.eventCategory.icon = await getPresignedUrl(
+      icon,
+      "event-category-icons" // Change to your actual bucket name
+    );
   }
 
   // ✅ Calculate total tickets
-  const totalTickets = event.ticketTiers.reduce((sum, tier) => {
+  const totalTickets = eventObj.ticketTiers.reduce((sum, tier) => {
     const available = tier.availableQuantity || 0;
     const sold = tier.sold || 0;
     return sum + available + sold;
   }, 0);
 
-  // Add totalTickets to the response object
-  const eventObj = event.toObject(); // convert to plain object if needed
   eventObj.totalTickets = totalTickets;
 
   return eventObj;
@@ -186,15 +236,36 @@ exports.getEventByOrganizer = async (organizerId) => {
       select: "name email",
     })
     .populate("eventCategory");
-  const formattedEvents = events.map((event) => {
-    if (event.eventCategory) {
-      event.eventCategory.icon = formatFileUrl(event.eventCategory?.icon);
-    }
-    if (Array.isArray(event.eventImages)) {
-      event.eventImages = event.eventImages.map((img) => formatFileUrl(img));
-    }
-    return event;
-  });
+  // const formattedEvents = events.map((event) => {
+  //   if (event.eventCategory) {
+  //     event.eventCategory.icon = formatFileUrl(event.eventCategory?.icon);
+  //   }
+  //   if (Array.isArray(event.eventImages)) {
+  //     event.eventImages = event.eventImages.map((img) => formatFileUrl(img));
+  //   }
+  //   return event;
+  // });
+
+  const formattedEvents = await Promise.all(
+    events.map(async (event) => {
+      if (event.eventCategory?.icon) {
+        // Adjust bucket name if different
+        event.eventCategory.icon = await getPresignedUrl(
+          event.eventCategory.icon,
+          "event-category-icons"
+        );
+      }
+
+      if (Array.isArray(event.eventImages)) {
+        event.eventImages = await Promise.all(
+          event.eventImages.map((img) => getPresignedUrl(img, "event-images"))
+        );
+      }
+
+      return event;
+    })
+  );
+
   return formattedEvents;
 };
 

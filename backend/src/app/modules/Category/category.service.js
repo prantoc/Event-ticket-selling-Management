@@ -1,4 +1,5 @@
 const formatFileUrl = require("../../utils/formatFileUrl");
+const { getPresignedUrl } = require("../../utils/formatMinioUrl");
 const Category = require("./category.schema");
 
 exports.createCategory = async (data) => {
@@ -8,9 +9,13 @@ exports.createCategory = async (data) => {
 exports.getAllCategories = async () => {
   const categories = await Category.find().sort({ order: 1 });
 
-  return categories.map((category) => {
+  return categories.map(async (category) => {
     if (category.icon) {
-      category.icon = formatFileUrl(category.icon);
+      // category.icon = formatFileUrl(category.icon);
+      category.icon = await getPresignedUrl(
+        category.icon,
+        "event-category-icons"
+      );
     }
     return category;
   });
@@ -19,7 +24,7 @@ exports.getAllCategories = async () => {
 exports.getCategoryById = async (id) => {
   const data = await Category.findById(id);
   if (data.icon) {
-    data.icon = formatFileUrl(data.icon);
+    data.icon = await getPresignedUrl(data.icon, "event-category-icons");
   }
   return data;
 };

@@ -6,13 +6,14 @@ const {
   uploadMedia,
   setRelativePath,
 } = require("../../middleware/multerConfig");
+const uploadMinio = require("../../middleware/uploadMinio");
 
 // Organizer routes
 router.post(
   "/",
   auth("superAdmin", "admin", "organizer"),
-  uploadMedia.array("eventImages"),
-  setRelativePath,
+  uploadMinio({ type: "array", name: "eventImages", bucket: "event-images" }),
+
   eventController.createEvent
 );
 router.patch(
@@ -23,8 +24,7 @@ router.patch(
 router.put(
   "/:id",
   auth("superAdmin", "admin", "organizer"),
-  uploadMedia.array("eventImages"),
-  setRelativePath,
+  uploadMinio({ type: "array", name: "eventImages", bucket: "event-images" }),
   eventController.updateEvent
 );
 router.delete(

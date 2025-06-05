@@ -6,13 +6,14 @@ const {
   uploadMedia,
   setRelativePath,
 } = require("../../middleware/multerConfig");
+const uploadMinio = require("../../middleware/uploadMinio");
 
 // Organizer routes (self)
 router.post(
   "/",
   auth("superAdmin", "admin", "user", "organizer"),
-  uploadMedia.single("logo"),
-  setRelativePath,
+
+  uploadMinio({ type: "single", name: "logo", bucket: "organizer-images" }),
   organizerController.createProfile
 );
 router.get("/me", auth("organizer"), organizerController.getProfile);
@@ -24,8 +25,7 @@ router.get(
 router.put(
   "/me",
   auth("organizer"),
-  uploadMedia.single("logo"),
-  setRelativePath,
+  uploadMinio({ type: "single", name: "logo", bucket: "organizer-images" }),
   organizerController.updateProfile
 );
 

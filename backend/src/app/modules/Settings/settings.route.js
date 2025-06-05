@@ -7,25 +7,29 @@ const {
   uploadMedia,
   setRelativePath,
 } = require("../../middleware/multerConfig");
+const uploadMinio = require("../../middleware/uploadMinio");
 
 router.get("/", settingsController.getAllSettings);
 router.patch(
   "/",
   auth("superAdmin", "admin"),
-  uploadMedia.fields([
-    { name: "companyLogo", maxCount: 1 },
-    { name: "infoFirstImage", maxCount: 1 },
-    { name: "infoSecondImage", maxCount: 1 },
-    { name: "marqueeImage", maxCount: 1 },
-  ]),
-  setRelativePath,
+  uploadMinio({
+    type: "fields",
+    fields: [
+      { name: "companyLogo", maxCount: 1 },
+      { name: "infoFirstImage", maxCount: 1 },
+      { name: "infoSecondImage", maxCount: 1 },
+      { name: "marqueeImage", maxCount: 1 },
+    ],
+    bucket: "settings-images",
+  }),
   settingsController.updateSettings
 );
+
 router.post(
   "/create-slider",
   auth("superAdmin", "admin"),
-  uploadMedia.single("image"),
-  setRelativePath,
+  uploadMinio({ type: "single", name: "image", bucket: "settings-images" }),
   settingsController.createSlider
 );
 router.get(
@@ -36,8 +40,7 @@ router.get(
 router.patch(
   "/sliders/:id",
   auth("superAdmin", "admin"),
-  uploadMedia.single("image"),
-  setRelativePath,
+  uploadMinio({ type: "single", name: "image", bucket: "settings-images" }),
   settingsController.updateSlider
 );
 router.delete(

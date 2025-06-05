@@ -6,22 +6,19 @@ const {
   setRelativePath,
 } = require("../../middleware/multerConfig");
 const auth = require("../../middleware/auth");
+const uploadMinio = require("../../middleware/uploadMinio");
 
 router.post(
   "/",
   auth("superAdmin", "admin", "user", "organizer"),
-  uploadMedia.single("icon"),
-  setRelativePath,
+  uploadMinio({ type: "single", name: "icon", bucket: "event-category-icons" }),
   categoryController.createCategory
 );
 router.get("/", categoryController.getCategories);
-router.get(
-  "/:id",  categoryController.getCategory
-);
+router.get("/:id", categoryController.getCategory);
 router.put(
   "/:id",
-  uploadMedia.single("icon"),
-  setRelativePath,
+  uploadMinio({ type: "single", name: "icon", bucket: "event-category-icons" }),
   auth("admin", "superAdmin"),
   categoryController.updateCategory
 );

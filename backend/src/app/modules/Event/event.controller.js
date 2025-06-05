@@ -6,33 +6,35 @@ const userService = require("../User/user.service");
 const newEventNoticeEmail = require("../../utils/newEventNoticeEmail");
 const updateEventStatusEmail = require("../../utils/updateEventStatusEmail");
 const eventRequestEmail = require("../../utils/eventRequestEmail");
+const minioClient = require("../../config/minioClient");
 
 exports.createEvent = async (req, res) => {
   try {
-    if (!req.files || req.files.length === 0) {
+    const eventImages = req.minioFiles?.eventImages;
+
+    if (!eventImages || eventImages.length === 0) {
       return errorResponse(res, "Event image is required", 400);
     }
+
     const settings = await settingsService.getSettings();
     const platformCommission = settings?.globalCommissionRate || 5;
 
-    const eventImages = req.files.map((file) => file.path);
     const event = await eventService.createEvent({
       ...req.body,
       organizerId: req.user.userId,
-      eventImages,
-      platformCommission: platformCommission,
+      eventImages, // MinIO object names (strings)
+      platformCommission,
     });
 
-    // Get all super admin emails
+    // Notify all super admins
     const allAdminsEmail = await userService.getSuperAdminEmails();
-
-    // Send event request email to each super admin
     for (const userEmail of allAdminsEmail) {
       await eventRequestEmail(userEmail, event.eventName);
     }
 
     return successResponse(res, "Event created successfully", event);
   } catch (err) {
+    console.error("Create event error:", err);
     return errorResponse(res, "Failed to create event", 500, err.message);
   }
 };
@@ -163,20 +165,37 @@ exports.updateEvent = async (req, res) => {
   try {
     let eventData = req.body;
 
-    // Find the existing event first
     const existingEvent = await eventService.getEventById(req.params.id);
-    if (!existingEvent) return errorResponse(res, "Event not found", 404);
-
-    // Handle image update
-    if (req.files && req.files.length > 0) {
-      const eventImages = req.files.map((file) => file.path);
-      eventData.eventImages = eventImages;
-    } else {
-      // Keep existing images if none are uploaded
-      eventData.eventImages = existingEvent.eventImages;
+    if (!existingEvent) {
+      return errorResponse(res, "Event not found", 404);
     }
 
-    // Proceed to update
+    const oldImages = existingEvent.eventImages || [];
+    const newImages = req.minioFiles?.eventImages;
+
+    if (newImages && newImages.length > 0) {
+      // Determine which old images are no longer used
+      const removedImages = oldImages.filter((img) => !newImages.includes(img));
+
+      // Delete removed images from MinIO
+      for (const objectName of removedImages) {
+        try {
+          await minioClient.removeObject("event-images", objectName);
+        } catch (err) {
+          console.warn(
+            `Failed to remove ${objectName} from MinIO:`,
+            err.message
+          );
+        }
+      }
+
+      // Use new images
+      eventData.eventImages = newImages;
+    } else {
+      // No new uploads — keep existing
+      eventData.eventImages = oldImages;
+    }
+
     const updatedEvent = await eventService.updateEvent(
       req.params.id,
       eventData
@@ -184,6 +203,7 @@ exports.updateEvent = async (req, res) => {
 
     return successResponse(res, "Event updated successfully", updatedEvent);
   } catch (err) {
+    console.error("Update event error:", err);
     return errorResponse(res, "Failed to update event", 500, err.message);
   }
 };

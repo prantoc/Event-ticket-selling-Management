@@ -5,7 +5,8 @@ const categoryService = require("./category.service");
 exports.createCategory = async (req, res) => {
   try {
     const user = req.user;
-    const icon = req.file ? req.file.path : null;
+    // const icon = req.file ? req.file.path : null;
+    const icon = req.minioFiles ? req.minioFiles.icon : null;
     const category = await categoryService.createCategory({
       ...req.body,
       icon,
@@ -56,7 +57,7 @@ exports.updateCategory = async (req, res) => {
   try {
     const categoryId = req.params.id;
 
-    // Get existing category to access the previous icon path
+    // Fetch existing category
     const existingCategory = await categoryService.getCategoryById(categoryId);
     if (!existingCategory) {
       return res.status(404).json({
@@ -68,24 +69,12 @@ exports.updateCategory = async (req, res) => {
 
     let updateData = { ...req.body };
 
-    if (req.file) {
-      // New icon uploaded
-      updateData.icon = req.file.path;
-
-      // Remove old icon if exists
-      if (existingCategory.icon) {
-        const oldImagePath = path.join(
-          __dirname,
-          "../../local",
-          existingCategory.icon
-        );
-
-        fs.unlink(oldImagePath, (err) => {
-          if (err) {
-            console.warn("Failed to delete old icon:", err.message);
-          }
-        });
-      }
+    // ✅ Use new MinIO uploaded icon (if provided)
+    if (req.minioFiles?.icon) {
+      updateData.icon = req.minioFiles.icon;
+    } else {
+      // Keep existing icon if no new one was uploaded
+      updateData.icon = existingCategory.icon;
     }
 
     const updatedCategory = await categoryService.updateCategory(
@@ -109,7 +98,10 @@ exports.updateCategory = async (req, res) => {
 
 exports.approveCategory = async (req, res) => {
   try {
-    const approvedCategory = await categoryService.updateCategory(req.params.id, { isActive: true });
+    const approvedCategory = await categoryService.updateCategory(
+      req.params.id,
+      { isActive: true }
+    );
 
     if (!approvedCategory) {
       return res.status(404).json({
@@ -132,7 +124,6 @@ exports.approveCategory = async (req, res) => {
     });
   }
 };
-
 
 exports.deleteCategory = async (req, res) => {
   try {

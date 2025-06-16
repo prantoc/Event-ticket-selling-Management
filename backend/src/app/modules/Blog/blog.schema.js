@@ -1,12 +1,12 @@
 // blog.model.js
 const mongoose = require("mongoose");
-const slugify = require("../../utils/slugify");
+const slugify = require("slugify");
 const blogSchema = new mongoose.Schema(
   {
     title: { type: String, required: true },
     slug: {
       type: String,
-    //   required: true,
+      //   required: true,
       unique: true,
       lowercase: true,
     },
@@ -26,14 +26,30 @@ const blogSchema = new mongoose.Schema(
 );
 
 blogSchema.pre("save", async function (next) {
-  if (this.isModified("title")) {
-    this.slug = slugify(this.title);
-    const exists = await this.constructor.findOne({
-      slug: this.slug,
-      _id: { $ne: this._id },
-    });
-    if (exists) this.slug = `${this.slug}-${Date.now()}`;
+  // Step 1: Determine base slug
+  let baseSlug = this.slug?.trim(); // user-provided slug, if any
+
+  if (!baseSlug && this.title) {
+    baseSlug = slugify(this.title, { lower: true, strict: true });
   }
+
+  if (baseSlug) {
+    let slug = baseSlug;
+    let count = 1;
+
+    // Step 2: Ensure uniqueness
+    while (
+      await this.constructor.findOne({
+        slug,
+        _id: { $ne: this._id },
+      })
+    ) {
+      slug = `${baseSlug}-${count++}`;
+    }
+
+    this.slug = slug;
+  }
+
   next();
 });
 

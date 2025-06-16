@@ -19,7 +19,7 @@ router.post(
   blogController.uploadEditorImage
 );
 router.get("/:slug", blogController.getBlogBySlug);
-router.get("/:id", blogController.getBlogById);
+router.get("/id/:id", blogController.getBlogById);
 router.put(
   "/:id",
   uploadMinio({

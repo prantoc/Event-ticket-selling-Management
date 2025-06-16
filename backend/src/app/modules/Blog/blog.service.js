@@ -21,7 +21,10 @@ exports.getAllBlogs = async (query) => {
     blogs.map(async (blog) => {
       const blogObj = blog.toObject(); // Ensure it's plain JS object if needed
       if (blog.featuredImage) {
-        blogObj.featuredImage = await getPresignedUrl(blog.featuredImage, "blogs");
+        blogObj.featuredImage = await getPresignedUrl(
+          blog.featuredImage,
+          "blogs"
+        );
       }
       return blogObj;
     })
@@ -30,9 +33,13 @@ exports.getAllBlogs = async (query) => {
   return { blogs: blogsWithUrls, meta };
 };
 
-
 exports.getBlogById = async (id) => {
-  return await Blog.findById(id).populate("category");
+  const blog = await Blog.findById(id).populate("category");
+
+  if (blog.featuredImage) {
+    blog.featuredImage = await getPresignedUrl(blog.featuredImage, "blogs");
+  }
+  return blog;
 };
 exports.getBlogBySlug = async (slug) => {
   const blog = await Blog.findOne({

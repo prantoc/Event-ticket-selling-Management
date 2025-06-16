@@ -25,7 +25,8 @@ exports.createCategory = async (req, res) => {
 
 exports.getCategories = async (req, res) => {
   try {
-    const categories = await categoryService.getAllCategories();
+    const categoriesPromiseArray = await categoryService.getAllCategories();
+    const categories = await Promise.all(categoriesPromiseArray);
     res.json({ success: true, data: categories });
   } catch (err) {
     res.status(500).json({

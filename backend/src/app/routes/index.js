@@ -5,6 +5,7 @@ const organizerRoutes = require("../modules/Organizer/organizer.routes");
 const eventRoutes = require("../modules/Event/event.routes");
 const categoryRoutes = require("../modules/Category/category.routes");
 const blogCategoryRoutes = require("../modules/BlogCategory/blogCategory.routes");
+const blogRoutes = require("../modules/Blog/blog.routes");
 const bookingRoutes = require("../modules/Booking/booking.route");
 const settingRoutes = require("../modules/Settings/settings.route");
 const faqRoutes = require("../modules/Faq/faq.route");
@@ -37,6 +38,10 @@ const moduleRoutes = [
   {
     path: "/blog-categories",
     route: blogCategoryRoutes,
+  },
+  {
+    path: "/blogs",
+    route: blogRoutes,
   },
   {
     path: "/bookings",

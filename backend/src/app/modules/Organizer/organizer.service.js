@@ -59,10 +59,10 @@ exports.getAllOrganizers = async (query) => {
     });
   }
 
-  const formattedOrganizers = filteredOrganizers.map((organizer) => {
+  const formattedOrganizers = filteredOrganizers.map(async (organizer) => {
     const data = organizer.toObject();
     if (data.logo) {
-      data.logo = formatFileUrl(data.logo);
+      data.logo = await getPresignedUrl(data.logo, "organizer-images");
     }
     return data;
   });

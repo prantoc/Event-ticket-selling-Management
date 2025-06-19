@@ -188,6 +188,7 @@ exports.createConnectAccountLink = async (userId) => {
     organizer.stripeConnectAccountId = account.id;
     await organizer.save();
   }
+  console.log("checking account id: ", organizer.stripeConnectAccountId);
 
   const accountLink = await stripe.accountLinks.create({
     account: organizer.stripeConnectAccountId,

@@ -59,13 +59,15 @@ exports.getAllOrganizers = async (query) => {
     });
   }
 
-  const formattedOrganizers = filteredOrganizers.map(async (organizer) => {
-    const data = organizer.toObject();
-    if (data.logo) {
-      data.logo = await getPresignedUrl(data.logo, "organizer-images");
-    }
-    return data;
-  });
+  const formattedOrganizers = await Promise.all(
+    filteredOrganizers.map(async (organizer) => {
+      const data = organizer.toObject();
+      if (data.logo) {
+        data.logo = await getPresignedUrl(data.logo, "organizer-images");
+      }
+      return data;
+    })
+  );
 
   return {
     organizers: formattedOrganizers,

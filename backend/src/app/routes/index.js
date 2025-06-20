@@ -13,6 +13,7 @@ const paymentRoutes = require("../modules/Payments/payment.routes");
 const payoutRoutes = require("../modules/Payout/payout.routes");
 const newsletterRoutes = require("../modules/Newsletter/newsletter.route");
 const addressRoutes = require("../modules/Address/address.route");
+const contactRoutes = require("../modules/Contact/contact.routes");
 const { path } = require("../../app");
 const moduleRoutes = [
   {
@@ -70,6 +71,10 @@ const moduleRoutes = [
   {
     path: "/address",
     route: addressRoutes,
+  },
+  {
+    path: "/contact",
+    route: contactRoutes,
   },
 ];
 

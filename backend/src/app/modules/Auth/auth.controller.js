@@ -10,6 +10,7 @@ const httpStatus = require('http-status').default;
 const UserModel = require('../User/user.schema');
 const AppError = require('../../errors/AppError');
 const hashPassword = require('../../utils/hashedPassword');
+const { client_url } = require('../../config');
 
 
 const login = catchAsync(async (req, res) => {
@@ -79,7 +80,7 @@ const forgotPassword = catchAsync(async (req, res) => {
     const user = await UserModel.findOne({ email });
     if (!user) return res.status(404).json({ message: "User not found" });
     const token = createToken({ email: user.email }, "15m");
-    const resetLink = `http://localhost:5173/reset-password?token=${token}`;
+    const resetLink = `${client_url}/reset-password?token=${token}`;
     await transporter.sendMail({
         to: user.email,
         subject: "Reset your password",

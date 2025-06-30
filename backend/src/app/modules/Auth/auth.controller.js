@@ -11,6 +11,7 @@ const UserModel = require('../User/user.schema');
 const AppError = require('../../errors/AppError');
 const hashPassword = require('../../utils/hashedPassword');
 const { client_url } = require('../../config');
+const sendResetPassEmail = require('../../utils/sendResetPassEmail');
 
 
 const login = catchAsync(async (req, res) => {
@@ -81,11 +82,7 @@ const forgotPassword = catchAsync(async (req, res) => {
     if (!user) return res.status(404).json({ message: "User not found" });
     const token = createToken({ email: user.email }, "15m");
     const resetLink = `${client_url}/reset-password?token=${token}`;
-    await transporter.sendMail({
-        to: user.email,
-        subject: "Reset your password",
-        html: `<p>Click <a target="_blank" href="${resetLink}">here</a> to reset your password. This link will expire in 15 minutes.</p>`,
-    });
+    await sendResetPassEmail(user.email, resetLink);
 
     sendResponse(res, {
         success: true,
